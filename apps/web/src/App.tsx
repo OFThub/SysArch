@@ -1,4 +1,6 @@
 import { Canvas } from './canvas/Canvas';
+import { Inspector } from './panels/Inspector';
+import { Palette } from './panels/Palette';
 import { ThemeSwitch } from './shell/ThemeSwitch';
 import { ViewTabs } from './shell/ViewTabs';
 import { useEditor } from './store';
@@ -15,9 +17,13 @@ export function App() {
           <ThemeSwitch />
         </div>
       </header>
-      <main className="min-h-0 flex-1">
-        <Canvas />
-      </main>
+      <div className="flex min-h-0 flex-1">
+        <Palette />
+        <main className="min-w-0 flex-1">
+          <Canvas />
+        </main>
+        <Inspector />
+      </div>
     </div>
   );
 }

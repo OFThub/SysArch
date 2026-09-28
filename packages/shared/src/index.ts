@@ -2,3 +2,4 @@ export * from './schema';
 export * from './migrate';
 export * from './catalog';
 export * from './templates';
+export * from './id';

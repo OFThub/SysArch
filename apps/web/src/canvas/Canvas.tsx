@@ -7,10 +7,12 @@ import {
   type NodeChange,
 } from '@xyflow/react';
 import '@xyflow/react/dist/base.css';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useRef, useState, type DragEvent } from 'react';
 import { tr } from '../i18n/tr';
-import { useEditor } from '../store';
+import { createNode } from '../panels/paletteItems';
+import { useCatalog, useEditor } from '../store';
 import { ArchNodeView } from './ArchNodeView';
+import { canvasApi, DND_MIME } from './canvasApi';
 import { FrameNode } from './FrameNode';
 import {
   archEdgeId,
@@ -27,44 +29,49 @@ const FRAME_PAD = 32;
 const FRAME_HEADER = 28;
 
 /** Transient per-node state React Flow owns between store writes. */
-type NodeOverlay = Pick<Node, 'measured' | 'selected' | 'dragging' | 'position'>;
+type NodeOverlay = Pick<Node, 'measured' | 'dragging' | 'position'>;
 
 export function Canvas() {
   const doc = useEditor((s) => s.doc);
   const viewId = useEditor((s) => s.activeViewId);
+  const selection = useEditor((s) => s.selection);
   const moveNodes = useEditor((s) => s.moveNodes);
+  const addNode = useEditor((s) => s.addNode);
+  const catalog = useCatalog();
+  const container = useRef<HTMLDivElement>(null);
 
   const model = useMemo(() => buildFlow(doc, viewId), [doc, viewId]);
 
-  // React Flow reports measurements, selection and in-flight drag positions as
-  // changes. They live here, layered over the store-derived nodes; positions
-  // reach the store only on drag stop, as one write.
+  // React Flow reports measurements and in-flight drag positions as changes.
+  // They live here, layered over the store-derived nodes; positions reach the
+  // store only on drag stop, as one write. Selection lives in the store so the
+  // inspector and later the palette/assistant can read and set it.
   const [nodeOverlay, setNodeOverlay] = useState(() => new Map<string, Partial<NodeOverlay>>());
-  const [selectedEdges, setSelectedEdges] = useState(() => new Set<string>());
 
   const nodes = useMemo(() => {
-    const arch: ArchFlowNode[] = model.nodes.map((n) => {
-      const o = nodeOverlay.get(n.id);
-      return o ? { ...n, ...o } : n;
-    });
+    const selected = new Set(selection.nodeIds);
+    const arch: ArchFlowNode[] = model.nodes.map((n) => ({
+      ...n,
+      ...nodeOverlay.get(n.id),
+      selected: selected.has(n.id),
+    }));
     return [...framesAround(model.frames, arch), ...arch];
-  }, [model, nodeOverlay]);
+  }, [model, nodeOverlay, selection.nodeIds]);
 
   // Selection is per architecture edge: clicking SDA selects the whole I2C link.
-  const edges = useMemo<ArchFlowEdge[]>(
-    () =>
-      model.edges.map((e) => (selectedEdges.has(archEdgeId(e.id)) ? { ...e, selected: true } : e)),
-    [model.edges, selectedEdges],
-  );
+  const edges = useMemo<ArchFlowEdge[]>(() => {
+    const selected = new Set(selection.edgeIds);
+    return model.edges.map((e) => ({ ...e, selected: selected.has(archEdgeId(e.id)) }));
+  }, [model.edges, selection.edgeIds]);
 
   const onNodesChange = useCallback((changes: NodeChange[]) => {
+    applySelect(changes, 'nodeIds', (id) => id);
     setNodeOverlay((prev) => {
       const next = new Map(prev);
       const patch = (id: string, p: Partial<NodeOverlay>) =>
         next.set(id, { ...next.get(id), ...p });
       for (const c of changes) {
         if (c.type === 'dimensions' && c.dimensions) patch(c.id, { measured: c.dimensions });
-        else if (c.type === 'select') patch(c.id, { selected: c.selected });
         else if (c.type === 'position' && c.position)
           patch(c.id, { position: c.position, dragging: c.dragging });
       }
@@ -72,17 +79,10 @@ export function Canvas() {
     });
   }, []);
 
-  const onEdgesChange = useCallback((changes: EdgeChange[]) => {
-    setSelectedEdges((prev) => {
-      const next = new Set(prev);
-      for (const c of changes) {
-        if (c.type !== 'select') continue;
-        if (c.selected) next.add(archEdgeId(c.id));
-        else next.delete(archEdgeId(c.id));
-      }
-      return next;
-    });
-  }, []);
+  const onEdgesChange = useCallback(
+    (changes: EdgeChange[]) => applySelect(changes, 'edgeIds', archEdgeId),
+    [],
+  );
 
   const onNodeDragStop = useCallback(
     (_: unknown, __: Node, dragged: Node[]) => {
@@ -99,8 +99,22 @@ export function Canvas() {
     [moveNodes, viewId],
   );
 
+  const onDragOver = (e: DragEvent) => {
+    if (!e.dataTransfer.types.includes(DND_MIME)) return;
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'copy';
+  };
+
+  const onDrop = (e: DragEvent) => {
+    const raw = e.dataTransfer.getData(DND_MIME);
+    if (!raw) return;
+    e.preventDefault();
+    const item = JSON.parse(raw) as { kind: 'type' | 'preset'; id: string };
+    addNode(createNode(item, catalog), viewId, canvasApi.toFlow(e.clientX, e.clientY));
+  };
+
   return (
-    <div className="relative h-full">
+    <div ref={container} className="relative h-full" onDragOver={onDragOver} onDrop={onDrop}>
       <ReactFlow
         key={viewId}
         nodes={nodes}
@@ -110,6 +124,7 @@ export function Canvas() {
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onNodeDragStop={onNodeDragStop}
+        onInit={(instance) => canvasApi.attach(instance, container.current)}
         fitView
         minZoom={0.2}
       >
@@ -128,6 +143,23 @@ export function Canvas() {
       )}
     </div>
   );
+}
+
+/** Folds React Flow's select changes into the store selection. */
+function applySelect(
+  changes: (NodeChange | EdgeChange)[],
+  key: 'nodeIds' | 'edgeIds',
+  toArchId: (id: string) => string,
+) {
+  const selects = changes.filter((c) => c.type === 'select');
+  if (selects.length === 0) return;
+  const { selection, setSelection } = useEditor.getState();
+  const ids = new Set(selection[key]);
+  for (const c of selects) {
+    if (c.selected) ids.add(toArchId(c.id));
+    else ids.delete(toArchId(c.id));
+  }
+  setSelection({ ...selection, [key]: [...ids] });
 }
 
 /** Domain frames wrap the measured bounds of their nodes; skipped until all are measured. */

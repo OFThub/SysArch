@@ -13,6 +13,7 @@
     "typecheck": "tsc -p tsconfig.json"
   },
   "dependencies": {
+    "nanoid": "^5.1.16",
     "zod": "^4.6.5"
   }
 }
