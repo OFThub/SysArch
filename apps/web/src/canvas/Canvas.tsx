@@ -10,13 +10,16 @@ import {
   type NodeChange,
 } from '@xyflow/react';
 import '@xyflow/react/dist/base.css';
-import { useCallback, useMemo, useRef, useState, type DragEvent } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type DragEvent } from 'react';
 import { tr } from '../i18n/tr';
 import { createNode } from '../panels/paletteItems';
 import { useCatalog, useEditor } from '../store';
 import { ArchNodeView } from './ArchNodeView';
 import { canvasApi, DND_MIME } from './canvasApi';
+import { CanvasToolbar } from './CanvasToolbar';
+import { getElk } from './elk';
 import { FrameNode } from './FrameNode';
+import { layoutPositions } from './layout';
 import {
   archEdgeId,
   buildFlow,
@@ -50,6 +53,37 @@ export function Canvas() {
   // store only on drag stop, as one write. Selection lives in the store so the
   // inspector and later the palette/assistant can read and set it.
   const [nodeOverlay, setNodeOverlay] = useState(() => new Map<string, Partial<NodeOverlay>>());
+
+  // Auto-layout runs in the ELK worker with the sizes React Flow measured, and
+  // lands as one moveNodes write: one render, one undo step.
+  const [layingOut, setLayingOut] = useState(false);
+  const runLayout = useCallback(async () => {
+    const sizes = new Map<string, { width: number; height: number }>();
+    for (const [id, o] of nodeOverlay)
+      if (o.measured?.width && o.measured.height)
+        sizes.set(id, { width: o.measured.width, height: o.measured.height });
+    setLayingOut(true);
+    try {
+      moveNodes(viewId, await layoutPositions(getElk(), model, sizes));
+      requestAnimationFrame(() => canvasApi.fitView());
+    } finally {
+      setLayingOut(false);
+    }
+  }, [model, nodeOverlay, moveNodes, viewId]);
+
+  // A view where nothing has a position yet (a fresh import, an AI-generated
+  // design) is laid out automatically once its nodes are measured. Views the
+  // user arranged are never rearranged without the toolbar button.
+  const positions = doc.views.find((v) => v.id === viewId)?.positions ?? {};
+  const unplaced = model.nodes.length > 0 && model.nodes.every((n) => !positions[n.id]);
+  const measured = model.nodes.every((n) => nodeOverlay.get(n.id)?.measured?.width);
+  // Once per view: a failing layout must not retry in a loop.
+  const autoLaidOut = useRef<string | null>(null);
+  useEffect(() => {
+    if (!unplaced || !measured || layingOut || autoLaidOut.current === viewId) return;
+    autoLaidOut.current = viewId;
+    void runLayout();
+  }, [unplaced, measured, layingOut, runLayout, viewId]);
 
   const nodes = useMemo(() => {
     const selected = new Set(selection.nodeIds);
@@ -150,6 +184,7 @@ export function Canvas() {
         fitView
         minZoom={0.2}
       >
+        <CanvasToolbar onLayout={() => void runLayout()} busy={layingOut} />
         <Background
           variant={BackgroundVariant.Dots}
           gap={16}

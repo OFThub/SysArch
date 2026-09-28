@@ -3,7 +3,11 @@ import type { ReactFlowInstance } from '@xyflow/react';
 // The live React Flow instance, for code outside the canvas (palette, command
 // palette) that needs flow coordinates. A module ref, not store state: it is
 // not data and must never enter undo history.
-type Flow = Pick<ReactFlowInstance, 'screenToFlowPosition'>;
+// Only what we call, typed structurally so any node-typed instance fits.
+type Flow = {
+  screenToFlowPosition: ReactFlowInstance['screenToFlowPosition'];
+  fitView: (options?: { padding?: number; duration?: number }) => Promise<boolean>;
+};
 let flow: Flow | null = null;
 let element: HTMLElement | null = null;
 let added = 0;
@@ -18,6 +22,10 @@ export const canvasApi = {
 
   toFlow(clientX: number, clientY: number) {
     return flow?.screenToFlowPosition({ x: clientX, y: clientY }) ?? { x: 0, y: 0 };
+  },
+
+  fitView() {
+    void flow?.fitView({ padding: 0.1, duration: 120 });
   },
 
   /** Centre of the visible canvas, stepped diagonally so repeated adds don't stack. */

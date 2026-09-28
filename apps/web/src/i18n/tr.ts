@@ -17,6 +17,8 @@ export const tr = {
   },
   canvas: {
     empty: 'Paletten bir bileşeni sürükleyip buraya bırak.',
+    autoLayout: 'Otomatik yerleştir',
+    fitView: 'Görünüme sığdır',
   },
   edit: {
     undo: 'Geri al',
