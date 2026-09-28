@@ -1,6 +1,6 @@
 import { seraIot } from '@sysarch/shared';
 import { describe, expect, it } from 'vitest';
-import { buildFlow } from './viewModel';
+import { archEdgeId, buildFlow } from './viewModel';
 
 const doc = seraIot();
 
@@ -39,5 +39,34 @@ describe('buildFlow', () => {
 
   it('returns an empty model for an unknown view', () => {
     expect(buildFlow(doc, 'nope')).toEqual({ nodes: [], edges: [], frames: [] });
+  });
+
+  it('splits pin-mapped edges into one line per pin between labelled pads', () => {
+    const { nodes, edges } = buildFlow(doc, 'hardware');
+    const bme = edges.filter((e) => archEdgeId(e.id) === 'e-bme');
+    expect(bme.map((e) => [e.id, e.sourceHandle, e.targetHandle])).toEqual([
+      ['e-bme/SDA', 'out:GPIO8', 'in:SDA'],
+      ['e-bme/SCL', 'out:GPIO9', 'in:SCL'],
+    ]);
+    // Two I2C devices share GPIO8/9, so the ESP32 shows each pad once, in header order.
+    const esp = nodes.find((n) => n.id === 'esp32')!.data.pads;
+    expect(esp.out.map((p) => p.label)).toEqual(['GPIO4', 'GPIO8', 'GPIO9', '3V3', 'GND', 'MQTT']);
+    expect(esp.in.map((p) => p.label)).toEqual(['5V', 'GND']);
+  });
+
+  it('spreads lines leaving one node over distinct lanes centred on zero', () => {
+    const lanes = buildFlow(doc, 'hardware')
+      .edges.filter((e) => e.source === 'esp32')
+      .map((e) => e.data!.lane);
+    expect(new Set(lanes).size).toBe(lanes.length);
+    expect(lanes.reduce((a, b) => a + b, 0)).toBeCloseTo(0);
+  });
+
+  it('gives network edges protocol pads and flags wireless and power lines', () => {
+    const { edges } = buildFlow(doc, 'hardware');
+    const publish = edges.find((e) => e.id === 'e-publish')!;
+    expect([publish.sourceHandle, publish.targetHandle]).toEqual(['out:MQTT', 'in:MQTT']);
+    expect(publish.data).toMatchObject({ wireless: true, power: false, channel: 'hardware' });
+    expect(edges.find((e) => e.id === 'p-esp/VCC')!.data!.power).toBe(true);
   });
 });

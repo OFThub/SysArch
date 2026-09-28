@@ -91,3 +91,13 @@
 .react-flow__attribution a {
   color: var(--ink-muted);
 }
+
+/* Pin pads: square terminals seated on the node edge. */
+.react-flow__handle.pad {
+  width: 8px;
+  height: 8px;
+  min-width: 0;
+  min-height: 0;
+  border: 0;
+  border-radius: var(--radius-chip);
+}

@@ -12,9 +12,17 @@ import { tr } from '../i18n/tr';
 import { useEditor } from '../store';
 import { ArchNodeView } from './ArchNodeView';
 import { FrameNode } from './FrameNode';
-import { buildFlow, type ArchFlowEdge, type ArchFlowNode, type FrameFlowNode } from './viewModel';
+import {
+  archEdgeId,
+  buildFlow,
+  type ArchFlowEdge,
+  type ArchFlowNode,
+  type FrameFlowNode,
+} from './viewModel';
+import { WireEdge } from './WireEdge';
 
 const nodeTypes = { arch: ArchNodeView, frame: FrameNode };
+const edgeTypes = { wire: WireEdge };
 const FRAME_PAD = 32;
 const FRAME_HEADER = 28;
 
@@ -42,8 +50,10 @@ export function Canvas() {
     return [...framesAround(model.frames, arch), ...arch];
   }, [model, nodeOverlay]);
 
+  // Selection is per architecture edge: clicking SDA selects the whole I2C link.
   const edges = useMemo<ArchFlowEdge[]>(
-    () => model.edges.map((e) => (selectedEdges.has(e.id) ? { ...e, selected: true } : e)),
+    () =>
+      model.edges.map((e) => (selectedEdges.has(archEdgeId(e.id)) ? { ...e, selected: true } : e)),
     [model.edges, selectedEdges],
   );
 
@@ -67,8 +77,8 @@ export function Canvas() {
       const next = new Set(prev);
       for (const c of changes) {
         if (c.type !== 'select') continue;
-        if (c.selected) next.add(c.id);
-        else next.delete(c.id);
+        if (c.selected) next.add(archEdgeId(c.id));
+        else next.delete(archEdgeId(c.id));
       }
       return next;
     });
@@ -96,6 +106,7 @@ export function Canvas() {
         nodes={nodes}
         edges={edges}
         nodeTypes={nodeTypes}
+        edgeTypes={edgeTypes}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onNodeDragStop={onNodeDragStop}
