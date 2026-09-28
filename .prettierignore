@@ -3,3 +3,4 @@ dist
 coverage
 .remember
 .playwright-mcp
+apps/server/drizzle
