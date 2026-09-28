@@ -101,3 +101,21 @@
   border: 0;
   border-radius: var(--radius-chip);
 }
+
+/* Header connect handles: a quiet ring that appears when the node is hovered or focused. */
+.react-flow__handle.connect {
+  width: 10px;
+  height: 10px;
+  min-width: 0;
+  min-height: 0;
+  border: 1.5px solid var(--ink-muted);
+  border-radius: 9999px;
+  background: var(--raised);
+  opacity: 0;
+  transition: opacity 120ms;
+}
+.react-flow__node:hover .react-flow__handle.connect,
+.react-flow__node:focus-visible .react-flow__handle.connect,
+.react-flow__handle.connect.connectingfrom {
+  opacity: 1;
+}

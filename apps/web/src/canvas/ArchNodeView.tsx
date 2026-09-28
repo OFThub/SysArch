@@ -1,4 +1,5 @@
-import { Handle, Position, type NodeProps } from '@xyflow/react';
+import { Handle, Position, useUpdateNodeInternals, type NodeProps } from '@xyflow/react';
+import { useEffect } from 'react';
 import { NodeIcon } from '../icons/NodeIcon';
 import { useCatalog } from '../store';
 import type { ArchFlowNode, Pad } from './viewModel';
@@ -8,11 +9,18 @@ import type { ArchFlowNode, Pad } from './viewModel';
  * label on top, and a labelled square pad for every pin or protocol in use.
  * Inputs sit on the left edge, outputs on the right, like a schematic symbol.
  */
-export function ArchNodeView({ data, selected }: NodeProps<ArchFlowNode>) {
+export function ArchNodeView({ id, data, selected }: NodeProps<ArchFlowNode>) {
   const { node, proxy, pads } = data;
   const type = useCatalog().get(node.type);
   const channel = `var(--ch-${node.domain})`;
   const hasPads = pads.in.length > 0 || pads.out.length > 0;
+
+  // React Flow re-measures handles only when the node resizes. A pad added
+  // beside a longer column keeps the size, so tell it explicitly; otherwise
+  // the new edge would have no handle to attach to.
+  const updateNodeInternals = useUpdateNodeInternals();
+  const padKey = [...pads.in, ...pads.out].map((p) => p.id).join('|');
+  useEffect(() => updateNodeInternals(id), [id, padKey, updateNodeInternals]);
 
   return (
     <div
@@ -24,7 +32,10 @@ export function ArchNodeView({ data, selected }: NodeProps<ArchFlowNode>) {
         outlineOffset: 1,
       }}
     >
-      <div className="flex items-start gap-2 px-3 py-2">
+      <div className="relative flex items-start gap-2 px-3 py-2">
+        {/* Drag between these (or any pad) to connect; revealed on hover. */}
+        <Handle id="in:new" type="target" position={Position.Left} className="connect" />
+        <Handle id="out:new" type="source" position={Position.Right} className="connect" />
         <span className="mt-0.5 text-ink-muted">
           <NodeIcon name={type?.icon ?? 'box'} />
         </span>

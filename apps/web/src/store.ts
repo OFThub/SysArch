@@ -28,6 +28,8 @@ export interface EditorState {
   moveNodes: (viewId: string, positions: Positions) => void;
   /** Adds a node and places it in the given view; other views place it on next layout. */
   addNode: (node: ArchNode, viewId: string, position: Point) => void;
+  /** Adds an edge and selects it so its protocol and pins can be checked right away. */
+  addEdge: (edge: ArchEdge) => void;
   /** Shallow-merges fields; `props` merges key by key. */
   updateNode: (id: string, patch: NodePatch) => void;
   updateEdge: (id: string, patch: EdgePatch) => void;
@@ -68,6 +70,12 @@ export const useEditor = create<EditorState>()((set) => ({
         })),
       },
       selection: { nodeIds: [node.id], edgeIds: [] },
+    })),
+
+  addEdge: (edge) =>
+    set((s) => ({
+      doc: { ...s.doc, edges: [...s.doc.edges, edge] },
+      selection: { nodeIds: [], edgeIds: [edge.id] },
     })),
 
   updateNode: (id, patch) =>

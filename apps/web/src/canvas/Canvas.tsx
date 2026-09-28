@@ -1,7 +1,10 @@
+import { connectNodes, ProtocolSchema, type Protocol } from '@sysarch/shared';
 import {
   Background,
   BackgroundVariant,
+  ConnectionMode,
   ReactFlow,
+  type Connection,
   type EdgeChange,
   type Node,
   type NodeChange,
@@ -99,6 +102,20 @@ export function Canvas() {
     [moveNodes, viewId],
   );
 
+  // A drag that starts on a protocol pad (out:MQTT) keeps that protocol; pins,
+  // header handles and everything else let connectNodes choose.
+  const onConnect = useCallback(
+    (c: Connection) => {
+      const { doc: d, addEdge } = useEditor.getState();
+      const source = d.nodes.find((n) => n.id === c.source);
+      const target = d.nodes.find((n) => n.id === c.target);
+      if (!source || !target || source.id === target.id) return;
+      const preferred = padProtocol(c.sourceHandle) ?? padProtocol(c.targetHandle);
+      addEdge(connectNodes(source, target, catalog, preferred));
+    },
+    [catalog],
+  );
+
   const onDragOver = (e: DragEvent) => {
     if (!e.dataTransfer.types.includes(DND_MIME)) return;
     e.preventDefault();
@@ -124,6 +141,10 @@ export function Canvas() {
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onNodeDragStop={onNodeDragStop}
+        onConnect={onConnect}
+        connectionMode={ConnectionMode.Loose}
+        isValidConnection={(c) => c.source !== c.target}
+        connectionLineStyle={{ stroke: 'var(--ink-muted)', strokeWidth: 1.5 }}
         onInit={(instance) => canvasApi.attach(instance, container.current)}
         fitView
         minZoom={0.2}
@@ -143,6 +164,14 @@ export function Canvas() {
       )}
     </div>
   );
+}
+
+const PROTOCOL_NAMES = new Set<string>(ProtocolSchema.options);
+
+/** `out:MQTT` → MQTT; pin pads (`in:SDA`) and header handles (`out:new`) → undefined. */
+function padProtocol(handle: string | null | undefined): Protocol | undefined {
+  const name = handle?.split(':')[1];
+  return name && PROTOCOL_NAMES.has(name) ? (name as Protocol) : undefined;
 }
 
 /** Folds React Flow's select changes into the store selection. */
