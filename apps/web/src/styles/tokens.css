@@ -21,6 +21,8 @@
   --ch-ai: light-dark(#b8367e, #e06bae);
   --ch-hardware: light-dark(#c98a00, #f0b429);
   --danger: light-dark(#c7362b, #f0645a);
+  /* Text on a danger fill: white on the dark red, ink on the light red (AA both ways). */
+  --on-danger: light-dark(#ffffff, #1b2024);
 
   /* The single shadow, for floating layers only (menus, palette, proposal card). */
   --shadow-color: light-dark(rgb(29 35 40 / 0.18), rgb(0 0 0 / 0.55));

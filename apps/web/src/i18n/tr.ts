@@ -18,6 +18,17 @@ export const tr = {
   canvas: {
     empty: 'Paletten bir bileşeni sürükleyip buraya bırak.',
   },
+  edit: {
+    undo: 'Geri al',
+    redo: 'Yinele',
+    deleteTitle: 'Seçili öğeler silinsin mi?',
+    deleteBody: (nodes: number, edges: number) =>
+      [nodes > 0 && `${nodes} bileşen`, edges > 0 && `${edges} bağlantı`]
+        .filter(Boolean)
+        .join(' ve ') + ' silinecek. Ctrl+Z ile geri alabilirsin.',
+    delete: 'Sil',
+    cancel: 'Vazgeç',
+  },
   palette: {
     title: 'Bileşenler',
     search: 'Bileşen ara',

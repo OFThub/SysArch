@@ -142,6 +142,7 @@ export function Canvas() {
         onEdgesChange={onEdgesChange}
         onNodeDragStop={onNodeDragStop}
         onConnect={onConnect}
+        deleteKeyCode={null}
         connectionMode={ConnectionMode.Loose}
         isValidConnection={(c) => c.source !== c.target}
         connectionLineStyle={{ stroke: 'var(--ink-muted)', strokeWidth: 1.5 }}

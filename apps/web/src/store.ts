@@ -1,13 +1,18 @@
 import {
   effectiveCatalog,
+  pasteSubgraph,
+  removeElements,
   seraIot,
   type ArchDoc,
   type ArchEdge,
   type ArchNode,
   type Catalog,
+  type Clip,
 } from '@sysarch/shared';
 import { useMemo } from 'react';
-import { create } from 'zustand';
+import { temporal } from 'zundo';
+import { create, useStore } from 'zustand';
+import { useShallow } from 'zustand/react/shallow';
 
 type Point = { x: number; y: number };
 type Positions = Record<string, Point>;
@@ -34,76 +39,144 @@ export interface EditorState {
   updateNode: (id: string, patch: NodePatch) => void;
   updateEdge: (id: string, patch: EdgePatch) => void;
   updateMeta: (patch: Partial<ArchDoc['meta']>) => void;
+  /** Removes elements with their dependents (see removeElements) and clears the selection. */
+  deleteElements: (nodeIds: string[], edgeIds: string[]) => void;
+  /** Pastes into the active view and selects what was pasted. */
+  paste: (clip: Clip, offset: Point) => void;
 }
 
 const mapById = <T extends { id: string }>(items: T[], id: string, fn: (item: T) => T) =>
   items.map((item) => (item.id === id ? fn(item) : item));
 
-export const useEditor = create<EditorState>()((set) => ({
-  // ponytail: demo doc until projects load from the server.
-  doc: seraIot(),
-  activeViewId: 'overview',
-  selection: { nodeIds: [], edgeIds: [] },
+// Undo grouping: property edits tag themselves with the field they touch.
+// Consecutive edits to the same field within COALESCE_MS form one undo step,
+// so typing a label is one step, while discrete actions (add, delete, drag)
+// always get their own.
+const COALESCE_MS = 1500;
+let editKey: string | null = null;
+let lastKey: string | null = null;
+let lastAt = 0;
+const tagEdit = (key: string) => {
+  editKey = key;
+};
 
-  setActiveView: (activeViewId) => set({ activeViewId, selection: { nodeIds: [], edgeIds: [] } }),
-  setSelection: (selection) => set({ selection }),
+export const useEditor = create<EditorState>()(
+  temporal(
+    (set) => ({
+      // ponytail: demo doc until projects load from the server.
+      doc: seraIot(),
+      activeViewId: 'overview',
+      selection: { nodeIds: [], edgeIds: [] },
 
-  moveNodes: (viewId, positions) =>
-    set((s) => ({
-      doc: {
-        ...s.doc,
-        views: mapById(s.doc.views, viewId, (v) => ({
-          ...v,
-          positions: { ...v.positions, ...positions },
+      setActiveView: (activeViewId) =>
+        set({ activeViewId, selection: { nodeIds: [], edgeIds: [] } }),
+      setSelection: (selection) => set({ selection }),
+
+      moveNodes: (viewId, positions) =>
+        set((s) => ({
+          doc: {
+            ...s.doc,
+            views: mapById(s.doc.views, viewId, (v) => ({
+              ...v,
+              positions: { ...v.positions, ...positions },
+            })),
+          },
         })),
-      },
-    })),
 
-  addNode: (node, viewId, position) =>
-    set((s) => ({
-      doc: {
-        ...s.doc,
-        nodes: [...s.doc.nodes, node],
-        views: mapById(s.doc.views, viewId, (v) => ({
-          ...v,
-          positions: { ...v.positions, [node.id]: position },
+      addNode: (node, viewId, position) =>
+        set((s) => ({
+          doc: {
+            ...s.doc,
+            nodes: [...s.doc.nodes, node],
+            views: mapById(s.doc.views, viewId, (v) => ({
+              ...v,
+              positions: { ...v.positions, [node.id]: position },
+            })),
+          },
+          selection: { nodeIds: [node.id], edgeIds: [] },
         })),
-      },
-      selection: { nodeIds: [node.id], edgeIds: [] },
-    })),
 
-  addEdge: (edge) =>
-    set((s) => ({
-      doc: { ...s.doc, edges: [...s.doc.edges, edge] },
-      selection: { nodeIds: [], edgeIds: [edge.id] },
-    })),
-
-  updateNode: (id, patch) =>
-    set((s) => ({
-      doc: {
-        ...s.doc,
-        nodes: mapById(s.doc.nodes, id, (n) => ({
-          ...n,
-          ...patch,
-          props: patch.props ? { ...n.props, ...patch.props } : n.props,
+      addEdge: (edge) =>
+        set((s) => ({
+          doc: { ...s.doc, edges: [...s.doc.edges, edge] },
+          selection: { nodeIds: [], edgeIds: [edge.id] },
         })),
-      },
-    })),
 
-  updateEdge: (id, patch) =>
-    set((s) => ({
-      doc: {
-        ...s.doc,
-        edges: mapById(s.doc.edges, id, (e) => ({
-          ...e,
-          ...patch,
-          props: patch.props ? { ...e.props, ...patch.props } : e.props,
+      updateNode: (id, patch) => {
+        tagEdit(`node:${id}:${Object.keys(patch.props ?? patch).join(',')}`);
+        set((s) => ({
+          doc: {
+            ...s.doc,
+            nodes: mapById(s.doc.nodes, id, (n) => ({
+              ...n,
+              ...patch,
+              props: patch.props ? { ...n.props, ...patch.props } : n.props,
+            })),
+          },
+        }));
+      },
+
+      updateEdge: (id, patch) => {
+        tagEdit(`edge:${id}:${Object.keys(patch.props ?? patch).join(',')}`);
+        set((s) => ({
+          doc: {
+            ...s.doc,
+            edges: mapById(s.doc.edges, id, (e) => ({
+              ...e,
+              ...patch,
+              props: patch.props ? { ...e.props, ...patch.props } : e.props,
+            })),
+          },
+        }));
+      },
+
+      updateMeta: (patch) => {
+        tagEdit(`meta:${Object.keys(patch).join(',')}`);
+        set((s) => ({ doc: { ...s.doc, meta: { ...s.doc.meta, ...patch } } }));
+      },
+
+      deleteElements: (nodeIds, edgeIds) =>
+        set((s) => ({
+          doc: removeElements(s.doc, nodeIds, edgeIds),
+          selection: { nodeIds: [], edgeIds: [] },
         })),
-      },
-    })),
 
-  updateMeta: (patch) => set((s) => ({ doc: { ...s.doc, meta: { ...s.doc.meta, ...patch } } })),
-}));
+      paste: (clip, offset) =>
+        set((s) => {
+          const r = pasteSubgraph(s.doc, clip, s.activeViewId, offset);
+          return { doc: r.doc, selection: { nodeIds: r.nodeIds, edgeIds: r.edgeIds } };
+        }),
+    }),
+    {
+      // Only the document is history; view, selection and UI state are not.
+      partialize: (s) => ({ doc: s.doc }),
+      equality: (a, b) => a.doc === b.doc,
+      limit: 200,
+      handleSet: (handleSet) => (pastState, replace) => {
+        const now = Date.now();
+        const coalesce = editKey !== null && editKey === lastKey && now - lastAt < COALESCE_MS;
+        lastKey = editKey;
+        lastAt = now;
+        editKey = null;
+        if (!coalesce) handleSet(pastState, replace);
+      },
+    },
+  ),
+);
+
+export const undo = () => useEditor.temporal.getState().undo();
+export const redo = () => useEditor.temporal.getState().redo();
+
+/** Whether undo/redo have anything to do, for toolbar state. */
+export function useHistory() {
+  return useStore(
+    useEditor.temporal,
+    useShallow((t) => ({
+      canUndo: t.pastStates.length > 0,
+      canRedo: t.futureStates.length > 0,
+    })),
+  );
+}
 
 /** Built-in catalog plus the doc's custom types, recomputed only when those change. */
 export function useCatalog(): Catalog {

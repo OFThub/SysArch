@@ -17,6 +17,7 @@
   --color-ch-ai: var(--ch-ai);
   --color-ch-hardware: var(--ch-hardware);
   --color-danger: var(--danger);
+  --color-on-danger: var(--on-danger);
   --color-transparent: transparent;
   --color-current: currentColor;
 
