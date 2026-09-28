@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "tsx watch src/index.ts",
+    "dev": "tsx watch --env-file-if-exists=.env src/index.ts",
     "typecheck": "tsc -p tsconfig.json",
     "db:generate": "drizzle-kit generate"
   },
@@ -14,7 +14,8 @@
     "better-auth": "^1.7.6",
     "better-sqlite3": "^12.11.1",
     "drizzle-orm": "^0.45.3",
-    "hono": "^4.12.0"
+    "hono": "^4.12.0",
+    "zod": "^4.6.5"
   },
   "devDependencies": {
     "@types/better-sqlite3": "^9.6.0",

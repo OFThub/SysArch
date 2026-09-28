@@ -1,11 +1,17 @@
 import { serve } from '@hono/node-server';
-import { Hono } from 'hono';
+import { mkdirSync } from 'node:fs';
+import { dirname } from 'node:path';
+import { createApp } from './app';
+import { createAuth } from './auth';
+import { openDb } from './db';
+import { loadEnv } from './env';
 
-const app = new Hono();
+const env = loadEnv();
+if (env.DATABASE_PATH !== ':memory:') mkdirSync(dirname(env.DATABASE_PATH), { recursive: true });
 
-app.get('/api/health', (c) => c.json({ ok: true }));
+const db = openDb(env.DATABASE_PATH);
+const { app } = createApp({ db, auth: createAuth(db, env), env });
 
-const port = Number(process.env.PORT ?? 8787);
-serve({ fetch: app.fetch, port }, (info) => {
-  console.log(`server listening on http://localhost:${info.port}`);
+serve({ fetch: app.fetch, port: env.PORT }, (info) => {
+  console.log(`SysArch API listening on http://localhost:${info.port}`);
 });
