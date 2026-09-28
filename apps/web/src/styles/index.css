@@ -83,3 +83,11 @@
     }
   }
 }
+
+/* Keep React Flow's attribution visible, in the quiet shell colors. */
+.react-flow__attribution {
+  background: transparent;
+}
+.react-flow__attribution a {
+  color: var(--ink-muted);
+}

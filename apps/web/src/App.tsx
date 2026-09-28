@@ -1,40 +1,23 @@
-import { useState } from 'react';
-import { tr } from './i18n/tr';
-import { applyThemePref, readThemePref, type ThemePref } from './theme';
-
-const THEMES: ThemePref[] = ['system', 'light', 'dark'];
+import { Canvas } from './canvas/Canvas';
+import { ThemeSwitch } from './shell/ThemeSwitch';
+import { ViewTabs } from './shell/ViewTabs';
+import { useEditor } from './store';
 
 export function App() {
-  const [theme, setTheme] = useState(readThemePref);
-
-  const chooseTheme = (pref: ThemePref) => {
-    applyThemePref(pref);
-    setTheme(pref);
-  };
+  const name = useEditor((s) => s.doc.meta.name);
 
   return (
     <div className="flex h-full flex-col">
-      <header className="flex h-11 items-center gap-4 border-b border-line bg-panel px-4">
-        <h1 className="font-wide text-md font-semibold">{tr.app.untitled}</h1>
-        <div
-          role="radiogroup"
-          aria-label={tr.theme.label}
-          className="ml-auto flex border border-line"
-        >
-          {THEMES.map((t) => (
-            <button
-              key={t}
-              role="radio"
-              aria-checked={theme === t}
-              onClick={() => chooseTheme(t)}
-              className="px-2.5 py-1 text-sm text-ink-muted aria-checked:bg-raised aria-checked:text-ink"
-            >
-              {tr.theme[t]}
-            </button>
-          ))}
+      <header className="flex h-11 shrink-0 items-stretch gap-6 border-b border-line bg-panel px-4">
+        <h1 className="flex items-center font-wide text-md font-semibold">{name}</h1>
+        <ViewTabs />
+        <div className="ml-auto flex items-center">
+          <ThemeSwitch />
         </div>
       </header>
-      <main className="flex-1" />
+      <main className="min-h-0 flex-1">
+        <Canvas />
+      </main>
     </div>
   );
 }
