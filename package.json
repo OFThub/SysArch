@@ -1,0 +1,12 @@
+{
+  "name": "sysarch",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@12.6.0",
+  "engines": {
+    "node": ">=22.12"
+  },
+  "scripts": {
+    "dev": "pnpm --parallel --filter ./apps/* dev"
+  }
+}
