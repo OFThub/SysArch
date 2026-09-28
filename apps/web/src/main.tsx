@@ -1,9 +1,13 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import { DOMAINS } from '@sysarch/shared';
+import { App } from './App';
+import './styles/index.css';
+import { applyThemePref, readThemePref } from './theme';
+
+applyThemePref(readThemePref());
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <p>SysArch: {DOMAINS.join(', ')}</p>
+    <App />
   </StrictMode>,
 );

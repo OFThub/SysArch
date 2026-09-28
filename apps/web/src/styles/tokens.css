@@ -1,0 +1,36 @@
+/*
+ * "Hassas cihaz" design tokens. Every color is defined once with
+ * light-dark(): the system theme applies without JS, and
+ * [data-theme] on <html> forces one side (see theme.ts).
+ *
+ * Channel colors follow the oscilloscope convention and carry meaning only:
+ * tab markers, node stripes, ports and edges. Never text, never decoration.
+ */
+:root {
+  color-scheme: light dark;
+
+  --canvas: light-dark(#e6e9eb, #1b2024);
+  --canvas-dot: light-dark(#c9cfd3, #2c343a);
+  --panel: light-dark(#f3f4f5, #22282d);
+  --raised: light-dark(#ffffff, #2a3136);
+  --ink: light-dark(#1d2328, #e4e8eb);
+  --ink-muted: light-dark(#5c6770, #98a3ab);
+  --line: light-dark(#cdd3d8, #38414a);
+
+  --ch-fullstack: light-dark(#0a8fa6, #3cc3d9);
+  --ch-ai: light-dark(#b8367e, #e06bae);
+  --ch-hardware: light-dark(#c98a00, #f0b429);
+  --danger: light-dark(#c7362b, #f0645a);
+
+  /* The single shadow, for floating layers only (menus, palette, proposal card). */
+  --shadow-color: light-dark(rgb(29 35 40 / 0.18), rgb(0 0 0 / 0.55));
+  --shadow-float: 0 8px 24px -4px var(--shadow-color);
+}
+
+:root[data-theme='light'] {
+  color-scheme: light;
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+}
