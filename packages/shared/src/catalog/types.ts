@@ -34,6 +34,7 @@ const latency = (ms: number) => num('latencyMs', 'Gecikme', 'ms', ms);
 const capacity = (rps: number) => num('capacityRps', 'Kapasite', 'istek/sn', rps);
 const voltage = (v: number) => num('voltage', 'Besleme gerilimi', 'V', v);
 const current = (ma: number) => num('currentMa', 'Ortalama akım', 'mA', ma);
+const price = num('priceUsd', 'Birim fiyat', 'USD');
 
 const HW_BUS = ['I2C', 'SPI', 'UART', 'CAN', 'GPIO', 'PWM', 'Power'] as const;
 
@@ -309,6 +310,7 @@ export const BUILTIN_TYPES: CatalogType[] = [
       select('family', 'Aile', ['ESP32', 'STM32', 'RP2040', 'nRF52', 'AVR']),
       voltage(3.3),
       current(80),
+      price,
       num('clockMhz', 'Saat', 'MHz', 240),
     ],
     protocols: [...HW_BUS, 'USB', 'BLE', 'LoRa', 'MQTT', 'HTTP', 'WebSocket'],
@@ -328,6 +330,7 @@ export const BUILTIN_TYPES: CatalogType[] = [
       num('ramGb', 'RAM', 'GB', 8),
       voltage(5),
       current(1500),
+      price,
     ],
     protocols: [...HW_BUS, 'USB', 'BLE', 'MQTT', 'HTTP', 'gRPC', 'WebSocket', 'SQL', 'TCP'],
     exportHints: { pricingKey: 'bom', strideCategory: 'process' },
@@ -343,6 +346,7 @@ export const BUILTIN_TYPES: CatalogType[] = [
       num('sampleRateHz', 'Örnekleme', 'Hz', 1),
       voltage(3.3),
       current(1),
+      price,
     ],
     protocols: ['I2C', 'SPI', 'UART', 'GPIO', 'Power'],
     exportHints: { pricingKey: 'bom', strideCategory: 'external' },
@@ -353,9 +357,10 @@ export const BUILTIN_TYPES: CatalogType[] = [
     label: 'Eyleyici',
     icon: 'hw-actuator',
     fields: [
-      select('kind', 'Tür', ['Servo', 'DC motor', 'Step motor', 'Röle', 'LED', 'Buzzer']),
+      select('kind', 'Tür', ['Servo', 'DC motor', 'Step motor', 'Röle', 'LED', 'Ekran', 'Buzzer']),
       voltage(5),
       current(100),
+      price,
     ],
     protocols: ['GPIO', 'PWM', 'I2C', 'Power'],
     exportHints: { pricingKey: 'bom', strideCategory: 'external' },
@@ -370,6 +375,7 @@ export const BUILTIN_TYPES: CatalogType[] = [
       num('outputVoltage', 'Çıkış gerilimi', 'V', 5),
       num('maxCurrentMa', 'En fazla akım', 'mA', 500),
       num('capacityMah', 'Kapasite', 'mAh', 0),
+      price,
     ],
     protocols: ['Power'],
     exportHints: { pricingKey: 'bom' },
@@ -383,6 +389,7 @@ export const BUILTIN_TYPES: CatalogType[] = [
       select('kind', 'Tür', ['LoRa', 'LTE', 'Zigbee', 'Wi-Fi', 'BLE']),
       voltage(3.3),
       current(40),
+      price,
     ],
     protocols: ['UART', 'SPI', 'I2C', 'LoRa', 'BLE', 'MQTT', 'HTTP', 'Power'],
     exportHints: { pricingKey: 'bom', strideCategory: 'process' },

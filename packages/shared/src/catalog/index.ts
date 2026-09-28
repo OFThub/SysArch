@@ -25,3 +25,5 @@ export function defaultProps(type: CatalogType): Props {
   for (const f of type.fields) if (f.default !== undefined) props[f.key] = f.default;
   return props;
 }
+
+export { PRESETS, nodeFromPreset, type Preset } from './presets';
