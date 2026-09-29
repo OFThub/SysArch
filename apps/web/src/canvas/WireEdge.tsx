@@ -1,5 +1,6 @@
 import { EdgeLabelRenderer, getSmoothStepPath, type EdgeProps } from '@xyflow/react';
 import { useState } from 'react';
+import { SeverityIcon } from '../ui/SeverityIcon';
 import type { ArchFlowEdge } from './viewModel';
 
 const LANE_GAP = 8;
@@ -58,13 +59,21 @@ export function WireEdge({
         {/* Wide invisible stroke so thin wires are easy to hover and click. */}
         <path d={path} fill="none" stroke="transparent" strokeWidth={16} />
       </g>
-      {(hover || selected) && (
+      {/* The label shows on hover or selection; an issue badge stays visible. */}
+      {(hover || selected || data.issue) && (
         <EdgeLabelRenderer>
           <div
-            className="pointer-events-none absolute rounded-chip border border-line bg-raised px-1.5 text-xs"
-            style={{ transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY}px)` }}
+            role={data.issue ? 'img' : undefined}
+            aria-label={data.issue?.text}
+            title={data.issue?.text}
+            className="absolute flex items-center gap-1 rounded-chip border border-line bg-raised px-1 text-xs"
+            style={{
+              transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY}px)`,
+              pointerEvents: data.issue ? 'all' : 'none',
+            }}
           >
-            {label}
+            {data.issue && <SeverityIcon severity={data.issue.severity} size={12} />}
+            {(hover || selected) && label}
           </div>
         </EdgeLabelRenderer>
       )}

@@ -2,6 +2,7 @@ import { Handle, Position, useUpdateNodeInternals, type NodeProps } from '@xyflo
 import { useEffect } from 'react';
 import { NodeIcon } from '../icons/NodeIcon';
 import { useCatalog } from '../store';
+import { SeverityIcon } from '../ui/SeverityIcon';
 import type { ArchFlowNode, Pad } from './viewModel';
 
 /**
@@ -43,6 +44,17 @@ export function ArchNodeView({ id, data, selected }: NodeProps<ArchFlowNode>) {
           <div className="truncate text-base font-semibold">{node.label}</div>
           <div className="text-xs text-ink-muted">{type?.label ?? node.type}</div>
         </div>
+        {data.issue && (
+          <span
+            role="img"
+            aria-label={data.issue.text}
+            title={data.issue.text}
+            className="ml-auto flex items-center gap-0.5 pt-0.5 text-xs tabular-nums"
+          >
+            <SeverityIcon severity={data.issue.severity} />
+            {data.issue.count > 1 && data.issue.count}
+          </span>
+        )}
       </div>
       {hasPads && (
         <div className="flex justify-between gap-6 border-t border-line py-1.5">

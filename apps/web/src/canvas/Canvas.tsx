@@ -11,6 +11,7 @@ import {
 } from '@xyflow/react';
 import '@xyflow/react/dist/base.css';
 import { useCallback, useEffect, useMemo, useRef, useState, type DragEvent } from 'react';
+import { issueIndex, issueText, useIssues, type IssueMark } from '../analysis/issues';
 import { tr } from '../i18n/tr';
 import { createNode } from '../panels/paletteItems';
 import { useCatalog, useEditor } from '../store';
@@ -25,6 +26,7 @@ import {
   buildFlow,
   type ArchFlowEdge,
   type ArchFlowNode,
+  type CanvasIssue,
   type FrameFlowNode,
 } from './viewModel';
 import { WireEdge } from './WireEdge';
@@ -85,21 +87,32 @@ export function Canvas() {
     void runLayout();
   }, [unplaced, measured, layingOut, runLayout, viewId]);
 
+  const issues = useIssues();
+  const marks = useMemo(() => issueIndex(issues), [issues]);
+
   const nodes = useMemo(() => {
     const selected = new Set(selection.nodeIds);
     const arch: ArchFlowNode[] = model.nodes.map((n) => ({
       ...n,
       ...nodeOverlay.get(n.id),
       selected: selected.has(n.id),
+      data: { ...n.data, issue: badge(marks.nodes.get(n.id)) },
     }));
     return [...framesAround(model.frames, arch), ...arch];
-  }, [model, nodeOverlay, selection.nodeIds]);
+  }, [model, nodeOverlay, selection.nodeIds, marks]);
 
   // Selection is per architecture edge: clicking SDA selects the whole I2C link.
+  // The issue badge sits on the first drawn line of an edge only.
   const edges = useMemo<ArchFlowEdge[]>(() => {
     const selected = new Set(selection.edgeIds);
-    return model.edges.map((e) => ({ ...e, selected: selected.has(archEdgeId(e.id)) }));
-  }, [model.edges, selection.edgeIds]);
+    const badged = new Set<string>();
+    return model.edges.map((e) => {
+      const id = archEdgeId(e.id);
+      const issue = badged.has(id) ? undefined : badge(marks.edges.get(id));
+      badged.add(id);
+      return { ...e, selected: selected.has(id), data: { ...e.data!, issue } };
+    });
+  }, [model.edges, selection.edgeIds, marks]);
 
   const onNodesChange = useCallback((changes: NodeChange[]) => {
     applySelect(changes, 'nodeIds', (id) => id);
@@ -208,6 +221,13 @@ const PROTOCOL_NAMES = new Set<string>(ProtocolSchema.options);
 function padProtocol(handle: string | null | undefined): Protocol | undefined {
   const name = handle?.split(':')[1];
   return name && PROTOCOL_NAMES.has(name) ? (name as Protocol) : undefined;
+}
+
+/** The badge an element shows: its worst severity, and every message as tooltip text. */
+function badge(mark: IssueMark | undefined): CanvasIssue | undefined {
+  if (!mark) return undefined;
+  const text = mark.items.map((i) => issueText(i).message).join('\n');
+  return { severity: mark.severity, count: mark.items.length, text };
 }
 
 /** Folds React Flow's select changes into the store selection. */

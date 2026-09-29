@@ -6,7 +6,11 @@ import type { ReactFlowInstance } from '@xyflow/react';
 // Only what we call, typed structurally so any node-typed instance fits.
 type Flow = {
   screenToFlowPosition: ReactFlowInstance['screenToFlowPosition'];
-  fitView: (options?: { padding?: number; duration?: number }) => Promise<boolean>;
+  fitView: (options?: {
+    padding?: number;
+    duration?: number;
+    nodes?: { id: string }[];
+  }) => Promise<boolean>;
 };
 let flow: Flow | null = null;
 let element: HTMLElement | null = null;
@@ -26,6 +30,12 @@ export const canvasApi = {
 
   fitView() {
     void flow?.fitView({ padding: 0.1, duration: 120 });
+  },
+
+  /** Zooms to the given nodes (an issue's components). */
+  fitNodes(ids: string[]) {
+    if (!ids.length) return;
+    void flow?.fitView({ nodes: ids.map((id) => ({ id })), padding: 0.5, duration: 200 });
   },
 
   /** Centre of the visible canvas, stepped diagonally so repeated adds don't stack. */

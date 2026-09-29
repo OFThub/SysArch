@@ -1,5 +1,6 @@
 import { ChevronLeft, Redo2, Undo2 } from 'lucide-react';
 import { useCallback, useState, type ReactNode } from 'react';
+import { AnalysisPanel } from '../analysis/AnalysisPanel';
 import { Canvas } from '../canvas/Canvas';
 import { tr } from '../i18n/tr';
 import { Inspector } from '../panels/Inspector';
@@ -73,8 +74,11 @@ export function Editor({ saveStatus, banner }: { saveStatus: ReactNode; banner?:
       {banner}
       <div className="flex min-h-0 flex-1">
         <Palette />
-        <main className="min-w-0 flex-1">
-          <Canvas />
+        <main className="flex min-w-0 flex-1 flex-col">
+          <div className="min-h-0 flex-1">
+            <Canvas />
+          </div>
+          <AnalysisPanel />
         </main>
         <Inspector />
       </div>

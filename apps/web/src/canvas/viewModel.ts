@@ -1,4 +1,5 @@
 import {
+  type Severity,
   PROTOCOLS,
   type ArchDoc,
   type ArchEdge,
@@ -14,7 +15,15 @@ export interface Pad {
   label: string;
 }
 
-export type ArchNodeData = { node: ArchNode; proxy: boolean; pads: { in: Pad[]; out: Pad[] } };
+/** Worst finding on an element, attached by the canvas for its badge. */
+export type CanvasIssue = { severity: Severity; count: number; text: string };
+
+export type ArchNodeData = {
+  node: ArchNode;
+  proxy: boolean;
+  pads: { in: Pad[]; out: Pad[] };
+  issue?: CanvasIssue;
+};
 export type ArchFlowNode = Node<ArchNodeData, 'arch'>;
 export type FrameData = { domain: Domain };
 export type FrameFlowNode = Node<FrameData, 'frame'>;
@@ -30,6 +39,7 @@ export type WireData = {
    * renderer shifts each line's vertical run by it so bundles stay separable.
    */
   lane: number;
+  issue?: CanvasIssue;
 };
 export type ArchFlowEdge = Edge<WireData, 'wire'>;
 
