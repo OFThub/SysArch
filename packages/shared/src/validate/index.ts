@@ -3,6 +3,7 @@ import type { ArchDoc } from '../schema';
 import { runRules } from './engine';
 import { protocolMismatch, unknownType } from './rules/compat';
 import { frontendToStore, modelWithoutSource, orphanNode } from './rules/design';
+import { pinVoltage } from './rules/voltage';
 import type { Rule } from './types';
 
 export * from './types';
@@ -12,6 +13,7 @@ export { describeIssue, ruleContext, runRules } from './engine';
 export const RULES: readonly Rule[] = [
   unknownType,
   protocolMismatch,
+  pinVoltage,
   frontendToStore,
   modelWithoutSource,
   orphanNode,

@@ -13,6 +13,8 @@ export interface Finding {
   edgeIds: string[];
   /** Values for the rule's message templates (labels, numbers, names). */
   params: Params;
+  /** Tells apart findings of one rule on the same nodes and edges (an edge side, a pin role). */
+  key?: string;
 }
 
 /** Lookups every rule needs, built once per validation run. */

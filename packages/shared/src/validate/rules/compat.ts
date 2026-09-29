@@ -41,8 +41,8 @@ export const protocolMismatch: Rule = {
             severity: 'warning',
             nodeIds: [n.id],
             edgeIds: [e.id],
+            key: side,
             params: {
-              side,
               label: n.label,
               protocol: e.protocol,
               supported: type.protocols.join(', '),

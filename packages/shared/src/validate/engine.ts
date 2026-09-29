@@ -25,7 +25,7 @@ export function runRules(doc: ArchDoc, catalog: Catalog, rules: readonly Rule[])
       ...f,
       rule: rule.id,
       category: rule.category,
-      id: [rule.id, ...f.nodeIds, ...f.edgeIds, f.params.side ?? ''].join(':'),
+      id: [rule.id, ...f.nodeIds, ...f.edgeIds, f.key ?? ''].join(':'),
     })),
   );
   return issues.sort((a, b) => SEVERITY_ORDER[a.severity] - SEVERITY_ORDER[b.severity]);
