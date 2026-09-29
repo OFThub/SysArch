@@ -1,4 +1,4 @@
-import type { ReactFlowInstance } from '@xyflow/react';
+import type { Node, ReactFlowInstance, Rect } from '@xyflow/react';
 
 // The live React Flow instance, for code outside the canvas (palette, command
 // palette) that needs flow coordinates. A module ref, not store state: it is
@@ -6,6 +6,8 @@ import type { ReactFlowInstance } from '@xyflow/react';
 // Only what we call, typed structurally so any node-typed instance fits.
 type Flow = {
   screenToFlowPosition: ReactFlowInstance['screenToFlowPosition'];
+  getNodes: () => Node[];
+  getNodesBounds: (nodeIds: string[]) => Rect;
   fitView: (options?: {
     padding?: number;
     duration?: number;
@@ -30,6 +32,17 @@ export const canvasApi = {
 
   fitView() {
     void flow?.fitView({ padding: 0.1, duration: 120 });
+  },
+
+  /** Bounds of every drawn node, frames included (for image export); undefined when empty. */
+  bounds() {
+    const nodes = flow?.getNodes() ?? [];
+    return flow && nodes.length ? flow.getNodesBounds(nodes.map((n) => n.id)) : undefined;
+  },
+
+  /** Every node currently drawn, frames included, with measured sizes. */
+  nodes(): Node[] {
+    return flow?.getNodes() ?? [];
   },
 
   /** Zooms to the given nodes (an issue's components). */

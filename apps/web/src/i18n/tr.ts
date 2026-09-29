@@ -99,6 +99,15 @@ export const tr = {
     to: 'Bitiş',
     noPath: 'Bu iki bileşen arasında bağlantı yolu yok.',
   },
+  export: {
+    title: 'Dışa aktar',
+    png: 'PNG olarak indir',
+    svg: 'SVG olarak indir',
+    bundle: 'Kod paketini indir (.zip)',
+    json: 'Mimariyi JSON olarak indir',
+    yaml: 'Mimariyi YAML olarak indir',
+    failed: 'Dışa aktarılamadı. Tuvalde en az bir bileşen olduğundan emin ol.',
+  },
   login: {
     title: 'SysArch',
     lead: 'Full stack, yapay zeka ve donanım mimarini tek yerde tasarla, doğrula ve koda dök.',

@@ -5,6 +5,7 @@ import { Canvas } from '../canvas/Canvas';
 import { tr } from '../i18n/tr';
 import { Inspector } from '../panels/Inspector';
 import { Palette } from '../panels/Palette';
+import { ExportMenu } from './ExportMenu';
 import { ThemeSwitch } from './ThemeSwitch';
 import { useShortcuts } from './useShortcuts';
 import { ViewTabs } from './ViewTabs';
@@ -55,6 +56,7 @@ export function Editor({ saveStatus, banner }: { saveStatus: ReactNode; banner?:
         <ViewTabs />
         <div className="ml-auto flex items-center gap-3">
           {saveStatus}
+          <ExportMenu />
           <div className="flex">
             <IconButton label={tr.edit.undo} shortcut="Ctrl+Z" disabled={!canUndo} onClick={undo}>
               <Undo2 size={16} strokeWidth={1.5} />
