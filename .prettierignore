@@ -4,3 +4,4 @@ coverage
 .remember
 .playwright-mcp
 apps/server/drizzle
+e2e/.tmp

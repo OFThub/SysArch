@@ -6,6 +6,7 @@ export default defineConfig({
   plugins: [react(), tailwindcss()],
   server: {
     port: 5173,
-    proxy: { '/api': 'http://localhost:8787' },
+    // SYSARCH_API lets the e2e run point the proxy at its own server.
+    proxy: { '/api': process.env.SYSARCH_API ?? 'http://localhost:8787' },
   },
 });
