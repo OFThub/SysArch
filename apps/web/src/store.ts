@@ -2,7 +2,7 @@ import {
   effectiveCatalog,
   pasteSubgraph,
   removeElements,
-  seraIot,
+  createEmptyDoc,
   type ArchDoc,
   type ArchEdge,
   type ArchNode,
@@ -25,8 +25,13 @@ export interface Selection {
 
 export interface EditorState {
   doc: ArchDoc;
+  /** The server copy this doc belongs to; revision is what the next save must match. */
+  project: { id: string; revision: number } | null;
   activeViewId: string;
   selection: Selection;
+  /** Replaces the doc with a loaded project and starts a fresh undo history. */
+  loadProject: (project: { id: string; revision: number; doc: ArchDoc }) => void;
+  setRevision: (revision: number) => void;
   setActiveView: (viewId: string) => void;
   setSelection: (selection: Selection) => void;
   /** Writes final positions for one view (after a drag or auto-layout). */
@@ -63,10 +68,23 @@ const tagEdit = (key: string) => {
 export const useEditor = create<EditorState>()(
   temporal(
     (set) => ({
-      // ponytail: demo doc until projects load from the server.
-      doc: seraIot(),
+      doc: createEmptyDoc('Proje'),
+      project: null,
       activeViewId: 'overview',
       selection: { nodeIds: [], edgeIds: [] },
+
+      loadProject: ({ id, revision, doc }) => {
+        set({
+          doc,
+          project: { id, revision },
+          activeViewId: 'overview',
+          selection: { nodeIds: [], edgeIds: [] },
+        });
+        // Undo must not step back into the previous project.
+        useEditor.temporal.getState().clear();
+      },
+      setRevision: (revision) =>
+        set((s) => (s.project ? { project: { ...s.project, revision } } : {})),
 
       setActiveView: (activeViewId) =>
         set({ activeViewId, selection: { nodeIds: [], edgeIds: [] } }),
