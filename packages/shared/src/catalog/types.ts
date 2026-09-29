@@ -35,6 +35,8 @@ const capacity = (rps: number) => num('capacityRps', 'Kapasite', 'istek/sn', rps
 const voltage = (v: number) => num('voltage', 'Besleme gerilimi', 'V', v);
 const current = (ma: number) => num('currentMa', 'Ortalama akım', 'mA', ma);
 const price = num('priceUsd', 'Birim fiyat', 'USD');
+// Any I2C device, not just sensors (displays, IO expanders, radios).
+const i2cAddress = text('i2cAddress', 'I2C adresi');
 
 const HW_BUS = ['I2C', 'SPI', 'UART', 'CAN', 'GPIO', 'PWM', 'Power'] as const;
 
@@ -342,7 +344,7 @@ export const BUILTIN_TYPES: CatalogType[] = [
     icon: 'hw-sensor',
     fields: [
       text('measures', 'Ölçtüğü'),
-      text('i2cAddress', 'I2C adresi'),
+      i2cAddress,
       num('sampleRateHz', 'Örnekleme', 'Hz', 1),
       voltage(3.3),
       current(1),
@@ -358,6 +360,7 @@ export const BUILTIN_TYPES: CatalogType[] = [
     icon: 'hw-actuator',
     fields: [
       select('kind', 'Tür', ['Servo', 'DC motor', 'Step motor', 'Röle', 'LED', 'Ekran', 'Buzzer']),
+      i2cAddress,
       voltage(5),
       current(100),
       price,
@@ -387,6 +390,7 @@ export const BUILTIN_TYPES: CatalogType[] = [
     icon: 'hw-comm',
     fields: [
       select('kind', 'Tür', ['LoRa', 'LTE', 'Zigbee', 'Wi-Fi', 'BLE']),
+      i2cAddress,
       voltage(3.3),
       current(40),
       price,

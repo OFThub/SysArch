@@ -167,7 +167,7 @@ export const PRESETS: Preset[] = [
     id: 'ssd1306',
     type: 'actuator',
     label: 'SSD1306 OLED',
-    props: { kind: 'Ekran', voltage: 3.3, currentMa: 20, priceUsd: 4 },
+    props: { kind: 'Ekran', i2cAddress: '0x3C', voltage: 3.3, currentMa: 20, priceUsd: 4 },
     pins: [vcc('VCC', 3.3), gnd, pin('SDA', 3.3, 'I2C_SDA'), pin('SCL', 3.3, 'I2C_SCL')],
   },
   {
