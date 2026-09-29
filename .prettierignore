@@ -5,3 +5,4 @@ coverage
 .playwright-mcp
 apps/server/drizzle
 e2e/.tmp
+.impeccable

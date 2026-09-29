@@ -11,3 +11,4 @@ test-results/
 .remember/
 .playwright-mcp/
 e2e/.tmp/
+.impeccable/
