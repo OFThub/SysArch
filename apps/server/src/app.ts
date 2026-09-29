@@ -5,6 +5,7 @@ import { secureHeaders } from 'hono/secure-headers';
 import type { Auth, SessionUser } from './auth';
 import type { Db } from './db';
 import { enabledProviders, type Env } from './env';
+import { projectRoutes } from './routes/projects';
 
 export type AppEnv = { Variables: { user: SessionUser } };
 
@@ -14,7 +15,7 @@ export interface AppDeps {
   env: Env;
 }
 
-export function createApp({ auth, env }: AppDeps) {
+export function createApp({ db, auth, env }: AppDeps) {
   /** Rejects the request unless it carries a valid session; exposes the user to handlers. */
   const requireUser = createMiddleware<AppEnv>(async (c, next) => {
     const session = await auth.api.getSession({ headers: c.req.raw.headers });
@@ -31,7 +32,8 @@ export function createApp({ auth, env }: AppDeps) {
     .get('/me', requireUser, (c) => {
       const u = c.get('user');
       return c.json({ id: u.id, name: u.name, email: u.email, image: u.image ?? null });
-    });
+    })
+    .route('/projects', projectRoutes(db, requireUser));
 
   const app = new Hono();
   app.use('*', secureHeaders());
