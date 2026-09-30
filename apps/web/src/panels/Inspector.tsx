@@ -43,23 +43,19 @@ export function Inspector() {
   );
   const count = selection.nodeIds.length + selection.edgeIds.length;
 
+  // The side panel around it provides the frame and the tab.
   return (
-    <aside
-      aria-label={tr.inspector.title}
-      className="flex w-80 shrink-0 flex-col overflow-y-auto border-l border-line bg-panel"
-    >
-      <div className="grid gap-3 p-4">
-        {node ? (
-          <NodeInspector key={node.id} node={node} />
-        ) : edge ? (
-          <EdgeInspector key={edge.id} edge={edge} />
-        ) : count > 1 ? (
-          <p className="text-sm text-ink-muted">{tr.inspector.multi(count)}</p>
-        ) : (
-          <ProjectInspector />
-        )}
-      </div>
-    </aside>
+    <div className="grid gap-3 p-4">
+      {node ? (
+        <NodeInspector key={node.id} node={node} />
+      ) : edge ? (
+        <EdgeInspector key={edge.id} edge={edge} />
+      ) : count > 1 ? (
+        <p className="text-sm text-ink-muted">{tr.inspector.multi(count)}</p>
+      ) : (
+        <ProjectInspector />
+      )}
+    </div>
   );
 }
 

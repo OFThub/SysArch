@@ -70,3 +70,4 @@ export function createApp({ db, auth, env }: AppDeps) {
 }
 
 export type ApiType = ReturnType<typeof createApp>['api'];
+export type { Proposal } from './routes/proposals';

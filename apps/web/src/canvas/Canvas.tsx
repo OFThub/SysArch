@@ -14,6 +14,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, type DragEvent } fro
 import { issueIndex, issueText, useIssues, type IssueMark } from '../analysis/issues';
 import { tr } from '../i18n/tr';
 import { createNode } from '../panels/paletteItems';
+import { usePreview } from '../proposals/store';
 import { useCatalog, useEditor } from '../store';
 import { ArchNodeView } from './ArchNodeView';
 import { canvasApi, DND_MIME } from './canvasApi';
@@ -48,7 +49,20 @@ export function Canvas() {
   const catalog = useCatalog();
   const container = useRef<HTMLDivElement>(null);
 
-  const model = useMemo(() => buildFlow(doc, viewId), [doc, viewId]);
+  // While a proposal is open the canvas shows its outcome, removals as
+  // ghosts, and is read-only: the store doc is untouched until it is applied.
+  const preview = usePreview();
+  const shown = preview?.doc ?? doc;
+  const model = useMemo(() => buildFlow(shown, viewId), [shown, viewId]);
+
+  // New nodes arrive unplaced, in a column right of the layout; bring the
+  // whole outcome into view once they are measured.
+  const previewing = preview?.proposal.id;
+  useEffect(() => {
+    if (!previewing) return;
+    const t = setTimeout(() => canvasApi.fitView(), 80);
+    return () => clearTimeout(t);
+  }, [previewing]);
 
   // React Flow reports measurements and in-flight drag positions as changes.
   // They live here, layered over the store-derived nodes; positions reach the
@@ -82,10 +96,11 @@ export function Canvas() {
   // Once per view: a failing layout must not retry in a loop.
   const autoLaidOut = useRef<string | null>(null);
   useEffect(() => {
-    if (!unplaced || !measured || layingOut || autoLaidOut.current === viewId) return;
+    // Never during a preview: it would store positions for nodes not yet in the doc.
+    if (preview || !unplaced || !measured || layingOut || autoLaidOut.current === viewId) return;
     autoLaidOut.current = viewId;
     void runLayout();
-  }, [unplaced, measured, layingOut, runLayout, viewId]);
+  }, [preview, unplaced, measured, layingOut, runLayout, viewId]);
 
   const issues = useIssues();
   const marks = useMemo(() => issueIndex(issues), [issues]);
@@ -96,10 +111,10 @@ export function Canvas() {
       ...n,
       ...nodeOverlay.get(n.id),
       selected: selected.has(n.id),
-      data: { ...n.data, issue: badge(marks.nodes.get(n.id)) },
+      data: { ...n.data, issue: badge(marks.nodes.get(n.id)), diff: preview?.nodes.get(n.id) },
     }));
     return [...framesAround(model.frames, arch), ...arch];
-  }, [model, nodeOverlay, selection.nodeIds, marks]);
+  }, [model, nodeOverlay, selection.nodeIds, marks, preview]);
 
   // Selection is per architecture edge: clicking SDA selects the whole I2C link.
   // The issue badge sits on the first drawn line of an edge only.
@@ -110,9 +125,10 @@ export function Canvas() {
       const id = archEdgeId(e.id);
       const issue = badged.has(id) ? undefined : badge(marks.edges.get(id));
       badged.add(id);
-      return { ...e, selected: selected.has(id), data: { ...e.data!, issue } };
+      const diff = preview?.edges.get(id);
+      return { ...e, selected: selected.has(id), data: { ...e.data!, issue, diff } };
     });
-  }, [model.edges, selection.edgeIds, marks]);
+  }, [model.edges, selection.edgeIds, marks, preview]);
 
   const onNodesChange = useCallback((changes: NodeChange[]) => {
     applySelect(changes, 'nodeIds', (id) => id);
@@ -171,7 +187,7 @@ export function Canvas() {
 
   const onDrop = (e: DragEvent) => {
     const raw = e.dataTransfer.getData(DND_MIME);
-    if (!raw) return;
+    if (!raw || preview) return;
     e.preventDefault();
     const item = JSON.parse(raw) as { kind: 'type' | 'preset'; id: string };
     addNode(createNode(item, catalog), viewId, canvasApi.toFlow(e.clientX, e.clientY));
@@ -194,10 +210,13 @@ export function Canvas() {
         isValidConnection={(c) => c.source !== c.target}
         connectionLineStyle={{ stroke: 'var(--ink-muted)', strokeWidth: 1.5 }}
         onInit={(instance) => canvasApi.attach(instance, container.current)}
+        nodesDraggable={!preview}
+        nodesConnectable={!preview}
+        elementsSelectable={!preview}
         fitView
         minZoom={0.2}
       >
-        <CanvasToolbar onLayout={() => void runLayout()} busy={layingOut} />
+        <CanvasToolbar onLayout={() => void runLayout()} busy={layingOut || preview !== null} />
         <Background
           variant={BackgroundVariant.Dots}
           gap={16}

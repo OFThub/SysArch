@@ -1,5 +1,6 @@
 import { Handle, Position, useUpdateNodeInternals, type NodeProps } from '@xyflow/react';
 import { useEffect } from 'react';
+import { tr } from '../i18n/tr';
 import { NodeIcon } from '../icons/NodeIcon';
 import { useCatalog } from '../store';
 import { SeverityIcon } from '../ui/SeverityIcon';
@@ -23,14 +24,16 @@ export function ArchNodeView({ id, data, selected }: NodeProps<ArchFlowNode>) {
   const padKey = [...pads.in, ...pads.out].map((p) => p.id).join('|');
   useEffect(() => updateNodeInternals(id), [id, padKey, updateNodeInternals]);
 
+  const diff = data.diff && DIFF[data.diff];
+
   return (
     <div
-      className="min-w-52 rounded-node border border-line bg-raised"
+      className={`min-w-52 rounded-node border border-line bg-raised ${data.diff === 'added' ? 'diff-enter' : ''}`}
       style={{
         borderLeft: `3px solid ${channel}`,
-        opacity: proxy ? 0.5 : 1,
-        outline: selected ? `2px solid ${channel}` : undefined,
-        outlineOffset: 1,
+        opacity: data.diff === 'removed' ? 0.45 : proxy ? 0.5 : 1,
+        outline: diff ? diff.outline : selected ? `2px solid ${channel}` : undefined,
+        outlineOffset: diff ? 3 : 1,
       }}
     >
       <div className="relative flex items-start gap-2 px-3 py-2">
@@ -41,15 +44,27 @@ export function ArchNodeView({ id, data, selected }: NodeProps<ArchFlowNode>) {
           <NodeIcon name={type?.icon ?? 'box'} />
         </span>
         <div className="min-w-0">
-          <div className="truncate text-base font-semibold">{node.label}</div>
+          <div
+            className={`truncate text-base font-semibold ${data.diff === 'removed' ? 'line-through' : ''}`}
+          >
+            {node.label}
+          </div>
           <div className="text-xs text-ink-muted">{type?.label ?? node.type}</div>
         </div>
+        {diff && data.diff && (
+          <span
+            className="ml-auto shrink-0 rounded-chip border px-1 text-xs"
+            style={{ color: diff.color, borderColor: diff.color }}
+          >
+            {tr.proposals.mark[data.diff]}
+          </span>
+        )}
         {data.issue && (
           <span
             role="img"
             aria-label={data.issue.text}
             title={data.issue.text}
-            className="ml-auto flex items-center gap-0.5 pt-0.5 text-xs tabular-nums"
+            className={`${diff ? '' : 'ml-auto'} flex items-center gap-0.5 pt-0.5 text-xs tabular-nums`}
           >
             <SeverityIcon severity={data.issue.severity} />
             {data.issue.count > 1 && data.issue.count}
@@ -65,6 +80,16 @@ export function ArchNodeView({ id, data, selected }: NodeProps<ArchFlowNode>) {
     </div>
   );
 }
+
+/**
+ * Proposal marks. Shape and a text tag carry the meaning, color only
+ * reinforces it: dashed for what comes or goes, solid for what changes.
+ */
+const DIFF = {
+  added: { outline: '1.5px dashed var(--diff-add)', color: 'var(--diff-add)' },
+  removed: { outline: '1.5px dashed var(--danger)', color: 'var(--danger)' },
+  changed: { outline: '1.5px solid var(--ink-muted)', color: 'var(--ink-muted)' },
+} as const;
 
 function PadColumn({ pads, side, channel }: { pads: Pad[]; side: 'in' | 'out'; channel: string }) {
   const isIn = side === 'in';

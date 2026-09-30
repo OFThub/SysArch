@@ -1,5 +1,5 @@
-import type { ApiType } from '@sysarch/server/api';
-import type { ArchDoc } from '@sysarch/shared';
+import type { ApiType, Proposal } from '@sysarch/server/api';
+import type { ArchDoc, OpError } from '@sysarch/shared';
 import { createAuthClient } from 'better-auth/react';
 import { hc } from 'hono/client';
 import type { SaveFn } from '../sync/autosave';
@@ -24,6 +24,43 @@ export const saveProject: SaveFn = async (id, revision, doc, { keepalive }) => {
 };
 
 export type ProjectData = { id: string; revision: number; doc: ArchDoc };
+
+export async function listProposals(projectId: string): Promise<Proposal[]> {
+  const res = await api.projects[':id'].proposals.$get({ param: { id: projectId } });
+  if (!res.ok) throw new Error(`http ${res.status}`);
+  return (await res.json()).proposals as Proposal[];
+}
+
+export type ApplyResult =
+  | { ok: true; revision: number; doc: ArchDoc }
+  /** Ops the current doc no longer allows, by their index in the proposal. */
+  | { ok: false; conflicts: OpError[] }
+  | { ok: false; error: string };
+
+export async function applyProposal(
+  projectId: string,
+  proposalId: string,
+  accept: number[],
+): Promise<ApplyResult> {
+  const res = await api.projects[':id'].proposals[':pid'].apply.$post({
+    param: { id: projectId, pid: proposalId },
+    json: { accept },
+  });
+  if (res.ok) {
+    const body = await res.json();
+    return { ok: true, revision: body.revision, doc: body.doc as ArchDoc };
+  }
+  const body = (await res.json().catch(() => ({}))) as { error?: string; errors?: OpError[] };
+  if (body.error === 'ops_conflict') return { ok: false, conflicts: body.errors ?? [] };
+  return { ok: false, error: body.error ?? `http ${res.status}` };
+}
+
+export async function rejectProposal(projectId: string, proposalId: string): Promise<boolean> {
+  const res = await api.projects[':id'].proposals[':pid'].reject.$post({
+    param: { id: projectId, pid: proposalId },
+  });
+  return res.ok;
+}
 
 /** Loads a project; `null` when it does not exist or belongs to someone else. */
 export async function loadProject(id: string): Promise<ProjectData | null> {

@@ -48,6 +48,12 @@ export interface EditorState {
   deleteElements: (nodeIds: string[], edgeIds: string[]) => void;
   /** Pastes into the active view and selects what was pasted. */
   paste: (clip: Clip, offset: Point) => void;
+  /**
+   * A change the server already made and saved (an applied proposal). Doc and
+   * revision move together, so autosave counts it as saved; undo steps back
+   * over it in one go, like any local edit.
+   */
+  applyRemote: (doc: ArchDoc, revision: number) => void;
 }
 
 const mapById = <T extends { id: string }>(items: T[], id: string, fn: (item: T) => T) =>
@@ -164,6 +170,13 @@ export const useEditor = create<EditorState>()(
           const r = pasteSubgraph(s.doc, clip, s.activeViewId, offset);
           return { doc: r.doc, selection: { nodeIds: r.nodeIds, edgeIds: r.edgeIds } };
         }),
+
+      applyRemote: (doc, revision) =>
+        set((s) => ({
+          doc,
+          project: s.project && { ...s.project, revision },
+          selection: { nodeIds: [], edgeIds: [] },
+        })),
     }),
     {
       // Only the document is history; view, selection and UI state are not.
