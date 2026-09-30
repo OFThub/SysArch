@@ -1,5 +1,5 @@
 import { seraIot } from '@sysarch/shared';
-import { Background, BackgroundVariant, ReactFlow } from '@xyflow/react';
+import { Background, BackgroundVariant, ReactFlow, type FitViewOptions } from '@xyflow/react';
 import { useEffect, useMemo, useState } from 'react';
 import { api, authClient } from '../api/client';
 import { ArchNodeView } from '../canvas/ArchNodeView';
@@ -18,6 +18,13 @@ type Provider = 'github' | 'google';
 export function LoginScreen() {
   const [providers, setProviders] = useState<Provider[] | 'unreachable' | null>(null);
   const backdrop = useMemo(() => buildFlow(seraIot(), 'hardware'), []);
+  // Wide screens put the panel on the left and fit the diagram beside it, so
+  // the product stays readable instead of disappearing behind the panel.
+  const [fit] = useState<FitViewOptions>(() =>
+    window.matchMedia('(min-width: 64rem)').matches
+      ? { padding: { top: 0.1, bottom: 0.1, right: '4%', left: '512px' } }
+      : { padding: 0.15 },
+  );
 
   useEffect(() => {
     api.providers
@@ -38,7 +45,7 @@ export function LoginScreen() {
           nodeTypes={nodeTypes}
           edgeTypes={edgeTypes}
           fitView
-          fitViewOptions={{ padding: 0.15 }}
+          fitViewOptions={fit}
           nodesDraggable={false}
           nodesConnectable={false}
           elementsSelectable={false}
@@ -58,7 +65,7 @@ export function LoginScreen() {
         </ReactFlow>
       </div>
 
-      <main className="relative flex h-full items-center justify-center p-6">
+      <main className="relative flex h-full items-center justify-center p-6 lg:justify-start lg:pl-16">
         <section className="w-full max-w-sm rounded-float border border-line bg-raised p-7 shadow-float">
           <h1 className="font-wide text-xl font-semibold">{tr.login.title}</h1>
           <p className="mt-2 text-base text-ink-muted">{tr.login.lead}</p>

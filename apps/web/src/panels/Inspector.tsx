@@ -270,20 +270,25 @@ function EdgeInspector({ edge }: { edge: ArchEdge }) {
         </Field>
       )}
 
-      <Field label={tr.inspector.bandwidth} unit="kbps">
-        <NumberInput
-          value={
-            typeof edge.props.bandwidthKbps === 'number' ? edge.props.bandwidthKbps : undefined
-          }
-          placeholder={info.defaultKbps !== undefined ? String(info.defaultKbps) : undefined}
-          onCommit={(v) => {
-            const { bandwidthKbps: _, ...rest } = edge.props;
-            update(edge.id, { props: v === undefined ? rest : { ...rest, bandwidthKbps: v } });
-          }}
-        />
-      </Field>
+      {/* A power line carries current, not data: its load is the power budget. */}
+      {edge.protocol !== 'Power' && (
+        <>
+          <Field label={tr.inspector.bandwidth} unit="kbps">
+            <NumberInput
+              value={
+                typeof edge.props.bandwidthKbps === 'number' ? edge.props.bandwidthKbps : undefined
+              }
+              placeholder={info.defaultKbps !== undefined ? String(info.defaultKbps) : undefined}
+              onCommit={(v) => {
+                const { bandwidthKbps: _, ...rest } = edge.props;
+                update(edge.id, { props: v === undefined ? rest : { ...rest, bandwidthKbps: v } });
+              }}
+            />
+          </Field>
 
-      <PayloadEditor edge={edge} />
+          <PayloadEditor edge={edge} />
+        </>
+      )}
     </>
   );
 }
@@ -323,7 +328,7 @@ function PinMapEditor({
         <SectionTitle>{tr.inspector.pinMap}</SectionTitle>
         <button
           onClick={() => update(edge.id, { pins: suggestPinMap(edge.protocol, srcPins, tgtPins) })}
-          className="pt-2 text-xs text-ink-muted underline-offset-2 hover:text-ink hover:underline"
+          className="mt-2 h-6 rounded-chip border border-line bg-raised px-2 text-xs hover:border-ink-muted"
         >
           {tr.inspector.suggestPins}
         </button>
@@ -394,7 +399,7 @@ function PayloadEditor({ edge }: { edge: ArchEdge }) {
             payload: { schemaName: 'Message', fields: [], sizeBytes: 0, ratePerSec: 0 },
           })
         }
-        className="justify-self-start text-sm text-ink-muted underline-offset-2 hover:text-ink hover:underline"
+        className="h-7 justify-self-start rounded-chip border border-line bg-raised px-2.5 text-sm hover:border-ink-muted"
       >
         {tr.inspector.addPayload}
       </button>
@@ -410,7 +415,7 @@ function PayloadEditor({ edge }: { edge: ArchEdge }) {
         <SectionTitle>{tr.inspector.payload}</SectionTitle>
         <button
           onClick={() => update(edge.id, { payload: undefined })}
-          className="pt-2 text-xs text-ink-muted underline-offset-2 hover:text-ink hover:underline"
+          className="mt-2 h-6 rounded-chip border border-line bg-raised px-2 text-xs hover:border-ink-muted"
         >
           {tr.inspector.removePayload}
         </button>

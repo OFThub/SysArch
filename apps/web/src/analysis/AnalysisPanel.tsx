@@ -77,7 +77,8 @@ export function AnalysisPanel() {
         </div>
       </div>
       {open && (
-        <div className="h-56 overflow-y-auto border-t border-line">
+        // Sized to its content, so "no issues" costs the canvas one line, not 224px.
+        <div className="max-h-56 overflow-y-auto border-t border-line">
           {tab === 'issues' ? <IssueList issues={issues} /> : <SimulationView />}
         </div>
       )}

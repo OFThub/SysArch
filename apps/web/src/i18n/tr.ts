@@ -114,7 +114,7 @@ export const tr = {
     github: 'GitHub ile giriş yap',
     google: 'Google ile giriş yap',
     noProviders:
-      'Sunucuda giriş sağlayıcısı tanımlı değil. apps/server/.env dosyasına GitHub ya da Google anahtarlarını ekleyip sunucuyu yeniden başlat.',
+      'Sunucuda giriş sağlayıcısı tanımlı değil. Sunucunun .env dosyasına GitHub ya da Google OAuth anahtarlarını ekleyip sunucuyu yeniden başlat.',
     unreachable: 'Sunucuya ulaşılamadı. API sunucusunun çalıştığından emin ol.',
   },
   projects: {
