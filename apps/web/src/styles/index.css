@@ -1,0 +1,122 @@
+@import 'tailwindcss';
+@import '@fontsource-variable/mona-sans/wdth.css';
+@import '@fontsource-variable/jetbrains-mono/index.css';
+@import './tokens.css';
+
+/* Only our tokens exist as utilities: no stray Tailwind palette or type scale. */
+@theme inline {
+  --color-*: initial;
+  --color-canvas: var(--canvas);
+  --color-canvas-dot: var(--canvas-dot);
+  --color-panel: var(--panel);
+  --color-raised: var(--raised);
+  --color-ink: var(--ink);
+  --color-ink-muted: var(--ink-muted);
+  --color-line: var(--line);
+  --color-ch-fullstack: var(--ch-fullstack);
+  --color-ch-ai: var(--ch-ai);
+  --color-ch-hardware: var(--ch-hardware);
+  --color-danger: var(--danger);
+  --color-on-danger: var(--on-danger);
+  --color-transparent: transparent;
+  --color-current: currentColor;
+
+  --font-sans: 'Mona Sans Variable', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono Variable', ui-monospace, monospace;
+
+  --text-*: initial;
+  --text-xs: 12px;
+  --text-xs--line-height: 16px;
+  --text-sm: 13px;
+  --text-sm--line-height: 18px;
+  --text-base: 14px;
+  --text-base--line-height: 20px;
+  --text-md: 16px;
+  --text-md--line-height: 22px;
+  --text-lg: 20px;
+  --text-lg--line-height: 26px;
+  --text-xl: 28px;
+  --text-xl--line-height: 34px;
+
+  /* Radius encodes hierarchy: shell 0, chip 2, node 4, floating layer 8. */
+  --radius-*: initial;
+  --radius-chip: 2px;
+  --radius-node: 4px;
+  --radius-float: 8px;
+
+  --shadow-*: initial;
+  --shadow-float: var(--shadow-float);
+}
+
+/* Expanded width for titles; the width axis is the family's personality. */
+@utility font-wide {
+  font-stretch: 112%;
+}
+
+@layer base {
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+
+  body {
+    background: var(--canvas);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    font-size: var(--text-base);
+    line-height: var(--text-base--line-height);
+    font-variant-numeric: tabular-nums;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--ink);
+    outline-offset: 2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+/* Keep React Flow's attribution visible, in the quiet shell colors. */
+.react-flow__attribution {
+  background: transparent;
+}
+.react-flow__attribution a {
+  color: var(--ink-muted);
+}
+
+/* Pin pads: square terminals seated on the node edge. */
+.react-flow__handle.pad {
+  width: 8px;
+  height: 8px;
+  min-width: 0;
+  min-height: 0;
+  border: 0;
+  border-radius: var(--radius-chip);
+}
+
+/* Header connect handles: a quiet ring that appears when the node is hovered or focused. */
+.react-flow__handle.connect {
+  width: 10px;
+  height: 10px;
+  min-width: 0;
+  min-height: 0;
+  border: 1.5px solid var(--ink-muted);
+  border-radius: 9999px;
+  background: var(--raised);
+  opacity: 0;
+  transition: opacity 120ms;
+}
+.react-flow__node:hover .react-flow__handle.connect,
+.react-flow__node:focus-visible .react-flow__handle.connect,
+.react-flow__handle.connect.connectingfrom {
+  opacity: 1;
+}
