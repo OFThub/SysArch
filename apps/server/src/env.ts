@@ -15,6 +15,8 @@ const EnvSchema = z.object({
   GITHUB_CLIENT_SECRET: optional,
   GOOGLE_CLIENT_ID: optional,
   GOOGLE_CLIENT_SECRET: optional,
+  /** Built web app to serve from this process (the Docker image sets it). */
+  WEB_DIST: optional,
 });
 
 export type Env = z.infer<typeof EnvSchema>;

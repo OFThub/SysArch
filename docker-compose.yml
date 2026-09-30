@@ -1,0 +1,24 @@
+# Self-hosting SysArch: one container serving the web app and the API.
+#
+#   cp apps/server/.env.example .env
+#   # set BETTER_AUTH_SECRET, and BETTER_AUTH_URL / WEB_ORIGIN to the public
+#   # URL (http://localhost:8787 locally), plus GitHub and/or Google OAuth keys
+#   docker compose up -d --build
+services:
+  sysarch:
+    build: .
+    image: sysarch
+    ports:
+      - '8787:8787'
+    env_file: .env
+    # Container paths win over the dev values copied from .env.example.
+    environment:
+      PORT: 8787
+      DATABASE_PATH: /data/sysarch.db
+      WEB_DIST: /app/web
+    volumes:
+      - sysarch-data:/data
+    restart: unless-stopped
+
+volumes:
+  sysarch-data:

@@ -9,6 +9,13 @@ describe('api basics', () => {
     expect(await res.json()).toEqual({ ok: true });
   });
 
+  it('answers unknown API paths with a JSON 404', async () => {
+    const { app } = await createHarness();
+    const res = await app.request('/api/nope');
+    expect(res.status).toBe(404);
+    expect(await res.json()).toEqual({ error: 'not_found' });
+  });
+
   it('rejects /api/me without a session', async () => {
     const { app } = await createHarness();
     expect((await app.request('/api/me')).status).toBe(401);

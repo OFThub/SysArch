@@ -1,0 +1,18 @@
+# Dependencies and build output are produced inside the image.
+**/node_modules
+**/dist
+# Never bake secrets or local data into an image.
+**/.env
+**/.env.*
+!**/.env.example
+**/*.db
+**/*.db-*
+# Local tooling and test artefacts.
+.git
+.github
+e2e/.tmp
+playwright-report
+test-results
+.playwright-mcp
+.remember
+.impeccable

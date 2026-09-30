@@ -49,6 +49,9 @@ export function createApp({ db, auth, env }: AppDeps) {
   );
   app.on(['GET', 'POST'], '/api/auth/*', (c) => auth.handler(c.req.raw));
   app.route('/api', api);
+  // Unknown API paths answer as the API, so a static-site fallback registered
+  // after this (the self-hosted index.html) never turns an API typo into HTML.
+  app.all('/api/*', (c) => c.json({ error: 'not_found' }, 404));
 
   return { app, api, requireUser };
 }
