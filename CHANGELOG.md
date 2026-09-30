@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-09-30
+
 ### Added
 
 - Architecture editor with Full Stack, Yapay Zeka and Donanım tabs and an
@@ -35,3 +37,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Docker image and `docker-compose.yml` for self-hosting in one container.
 - Continuous integration for formatting, types, lint, unit and end-to-end
   tests.
+
+[unreleased]: https://github.com/OFThub/SysArch/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/OFThub/SysArch/releases/tag/v0.1.0
