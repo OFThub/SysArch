@@ -42,7 +42,13 @@ export function startAutosave(save: SaveFn, delayMs = 800) {
       return flush(keepalive);
     }
     const { doc, project } = useEditor.getState();
-    if (!project || doc === lastSaved) return;
+    if (!project) return;
+    // Back to what the server has (an edit undone, undo then redo): nothing
+    // to send, but the pending state must still clear.
+    if (doc === lastSaved) {
+      if (useSaveStatus.getState().state === 'pending') set({ state: 'saved' });
+      return;
+    }
     if (useSaveStatus.getState().state === 'conflict') return;
 
     const valid = ArchDocSchema.safeParse(doc);
