@@ -1,11 +1,13 @@
 import { Hono } from 'hono';
+import { bodyLimit } from 'hono/body-limit';
 import { cors } from 'hono/cors';
 import { createMiddleware } from 'hono/factory';
 import { secureHeaders } from 'hono/secure-headers';
 import type { Auth, SessionUser } from './auth';
 import type { Db } from './db';
 import { enabledProviders, type Env } from './env';
-import { projectRoutes } from './routes/projects';
+import { MAX_BODY_BYTES, projectRoutes } from './routes/projects';
+import { proposalRoutes } from './routes/proposals';
 
 export type AppEnv = { Variables: { user: SessionUser } };
 
@@ -33,7 +35,18 @@ export function createApp({ db, auth, env }: AppDeps) {
       const u = c.get('user');
       return c.json({ id: u.id, name: u.name, email: u.email, image: u.image ?? null });
     })
-    .route('/projects', projectRoutes(db, requireUser));
+    // Every project route needs a session and a bounded body; applied once
+    // here so routers sharing the prefix do not repeat the session lookup.
+    .use(
+      '/projects/*',
+      requireUser,
+      bodyLimit({
+        maxSize: MAX_BODY_BYTES,
+        onError: (c) => c.json({ error: 'payload_too_large' }, 413),
+      }),
+    )
+    .route('/projects', projectRoutes(db))
+    .route('/projects', proposalRoutes(db));
 
   const app = new Hono();
   app.use('*', secureHeaders());

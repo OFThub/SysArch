@@ -1,7 +1,6 @@
 import { ArchDocSchema, createEmptyDoc, migrate, newId, type ArchDoc } from '@sysarch/shared';
 import { and, desc, eq } from 'drizzle-orm';
-import { Hono, type MiddlewareHandler } from 'hono';
-import { bodyLimit } from 'hono/body-limit';
+import { Hono } from 'hono';
 import { validator } from 'hono/validator';
 import { z } from 'zod';
 import type { AppEnv } from '../app';
@@ -19,17 +18,25 @@ const CreateBody = z.object({
 });
 
 /** ETag / If-Match carry the revision as a quoted string: "7". */
-const etag = (revision: number) => `"${revision}"`;
+export const etag = (revision: number) => `"${revision}"`;
 function parseIfMatch(header: string | undefined): number | undefined {
   const n = Number(header?.replace(/^W\//, '').replaceAll('"', '').trim());
   return header && Number.isInteger(n) && n > 0 ? n : undefined;
 }
 
 /** Validation errors as `path: message` lines the client can show next to the problem. */
-const issues = (error: z.ZodError) =>
+export const issues = (error: z.ZodError) =>
   error.issues.map((i) => `${i.path.join('.') || '(root)'}: ${i.message}`);
 
-function readDoc(raw: unknown): ArchDoc | { error: string[] } {
+/**
+ * Every query filters by owner as well as id, so another user's project is
+ * indistinguishable from a missing one (404, never 403).
+ */
+export const owned = (id: string, ownerId: string) =>
+  and(eq(projects.id, id), eq(projects.ownerId, ownerId));
+
+/** Stored docs may predate the current schema; every read migrates. */
+export function readDoc(raw: unknown): ArchDoc | { error: string[] } {
   try {
     return migrate(raw);
   } catch (e) {
@@ -37,22 +44,9 @@ function readDoc(raw: unknown): ArchDoc | { error: string[] } {
   }
 }
 
-export function projectRoutes(db: Db, requireUser: MiddlewareHandler<AppEnv>) {
-  // Every query filters by owner as well as id, so another user's project is
-  // indistinguishable from a missing one (404, never 403).
-  const owned = (id: string, ownerId: string) =>
-    and(eq(projects.id, id), eq(projects.ownerId, ownerId));
-
+/** Project CRUD. Session and body-size checks are applied where it is mounted. */
+export function projectRoutes(db: Db) {
   return new Hono<AppEnv>()
-    .use('*', requireUser)
-    .use(
-      '*',
-      bodyLimit({
-        maxSize: MAX_BODY_BYTES,
-        onError: (c) => c.json({ error: 'payload_too_large' }, 413),
-      }),
-    )
-
     .get('/', (c) => {
       const rows = db
         .select({
@@ -96,7 +90,6 @@ export function projectRoutes(db: Db, requireUser: MiddlewareHandler<AppEnv>) {
         .where(owned(c.req.param('id'), c.get('user').id))
         .get();
       if (!row) return c.json({ error: 'not_found' }, 404);
-      // Stored docs may predate the current schema; migrate on every read.
       const doc = readDoc(row.doc);
       if ('error' in doc) return c.json({ error: 'corrupt_doc', issues: doc.error }, 500);
       c.header('ETag', etag(row.revision));

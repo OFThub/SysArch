@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { effectiveCatalog } from '../catalog';
 import { seraIot } from '../templates';
-import { describeIssue, RULES, validate } from './index';
+import { describeIssue, newIssues, RULES, validate } from './index';
 
 const catalog = effectiveCatalog();
 const rulesOf = (doc: ReturnType<typeof seraIot>) => validate(doc, catalog).map((i) => i.rule);
@@ -75,5 +75,30 @@ describe('validate', () => {
       expect(rule.text.tr({}).message.length, rule.id).toBeGreaterThan(0);
       expect(rule.text.en({}).message.length, rule.id).toBeGreaterThan(0);
     }
+  });
+});
+
+describe('newIssues', () => {
+  it('reports only what a change introduces, not what was already wrong', () => {
+    // Both start with the same unknown type, which is not news.
+    const broken = () => {
+      const doc = seraIot();
+      doc.nodes.find((n) => n.id === 'bme280')!.type = 'thermo';
+      return doc;
+    };
+    const before = broken();
+    const after = broken();
+    after.nodes.push({
+      id: 'lonely',
+      domain: 'fullstack',
+      type: 'cache',
+      label: 'Redis',
+      props: {},
+    });
+
+    const introduced = newIssues(before, after);
+    expect(introduced.map((i) => [i.rule, i.nodeIds])).toEqual([['orphan-node', ['lonely']]]);
+    // Fixing an issue introduces nothing.
+    expect(newIssues(after, before)).toEqual([]);
   });
 });
