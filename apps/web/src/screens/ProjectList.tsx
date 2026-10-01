@@ -5,6 +5,7 @@ import { tr } from '../i18n/tr';
 import { navigate } from '../nav';
 import { ThemeSwitch } from '../shell/ThemeSwitch';
 import { ConfirmDialog } from '../ui/ConfirmDialog';
+import { ApiKeys } from './ApiKeys';
 
 type Row = { id: string; name: string; updatedAt: string };
 
@@ -135,6 +136,8 @@ export function ProjectList({ userName }: { userName: string }) {
             </tbody>
           </table>
         )}
+
+        <ApiKeys />
       </main>
 
       {toDelete && (

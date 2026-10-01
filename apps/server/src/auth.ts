@@ -31,6 +31,8 @@ export function authOptions(db: Db, env: Env) {
       apiKey({
         enableSessionForAPIKeys: true,
         defaultPrefix: 'sysarch_',
+        // The prefix plus six characters, so keys can be told apart in the list.
+        startingCharactersConfig: { charactersLength: 14 },
         // The default (10 a day) would stall an MCP session within minutes.
         rateLimit: { enabled: true, timeWindow: 60_000, maxRequests: 120 },
       }),

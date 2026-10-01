@@ -1,5 +1,6 @@
 import type { ApiType, Proposal } from '@sysarch/server/api';
 import { newId, type ArchDoc, type OpError } from '@sysarch/shared';
+import { apiKeyClient } from '@better-auth/api-key/client';
 import { createAuthClient } from 'better-auth/react';
 import { hc } from 'hono/client';
 import type { SaveFn } from '../sync/autosave';
@@ -14,7 +15,7 @@ export const CLIENT_ID = newId();
 export const api = hc<ApiType>('/api', { headers: { 'X-Client-Id': CLIENT_ID } });
 
 /** Better Auth on the same origin (/api/auth), proxied to the server in dev. */
-export const authClient = createAuthClient();
+export const authClient = createAuthClient({ plugins: [apiKeyClient()] });
 
 export const saveProject: SaveFn = async (id, revision, doc, { keepalive }) => {
   const res = await api.projects[':id'].$put(
