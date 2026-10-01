@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { loadProject, saveProject } from '../api/client';
 import { tr } from '../i18n/tr';
 import { navigate } from '../nav';
+import { loadChat } from '../assistant/store';
 import { loadProposals } from '../proposals/store';
 import { Editor } from '../shell/Editor';
 import { ConflictBanner, SaveStatus } from '../shell/SaveStatus';
@@ -26,6 +27,7 @@ export function ProjectEditor({ id }: { id: string }) {
         if (!project) return setPhase('missing');
         useEditor.getState().loadProject(project);
         void loadProposals(project.id);
+        void loadChat(project.id);
         setPhase('ready');
       },
       () => current && setPhase('failed'),

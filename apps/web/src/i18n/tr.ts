@@ -102,6 +102,21 @@ export const tr = {
   side: {
     tabs: 'Yan panel',
   },
+  assistant: {
+    tab: 'Asistan',
+    empty:
+      'Mimari hakkında sor ya da bir değişiklik iste. Örneğin: “Seçili sensörleri ESP32’ye I2C ile bağla.” Değişiklikler öneri olarak gelir, sen onaylamadan uygulanmaz.',
+    unavailable: 'Asistan kapalı. Sunucuya ANTHROPIC_API_KEY eklenip yeniden başlatılınca açılır.',
+    you: 'Sen',
+    name: 'Asistan',
+    placeholder: 'Bir şey sor ya da değişiklik iste',
+    send: 'Gönder',
+    thinking: 'Asistan çalışıyor',
+    review: 'Öneriyi incele',
+    refused: 'Asistan bu isteği yanıtlamadı. İsteği farklı ifade edip yeniden dene.',
+    failed: 'Yanıt alınamadı. Biraz sonra yeniden dene.',
+    limited: 'Kısa sürede çok fazla istek gönderildi. Birkaç dakika sonra yeniden dene.',
+  },
   proposals: {
     tab: 'Öneriler',
     empty:
