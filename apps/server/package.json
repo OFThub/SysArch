@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.129.0",
+    "@better-auth/api-key": "1.7.6",
     "@hono/node-server": "^2.1.1",
     "@sysarch/shared": "workspace:*",
     "better-auth": "^1.7.6",

@@ -9,6 +9,7 @@
     "typecheck": "tsc -p tsconfig.json"
   },
   "dependencies": {
+    "@better-auth/api-key": "1.7.6",
     "@fontsource-variable/jetbrains-mono": "^5.3.0",
     "@fontsource-variable/mona-sans": "^5.3.0",
     "@sysarch/shared": "workspace:*",

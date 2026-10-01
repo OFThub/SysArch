@@ -1,3 +1,4 @@
+import { APIError } from 'better-auth/api';
 import { Hono } from 'hono';
 import { bodyLimit } from 'hono/body-limit';
 import { cors } from 'hono/cors';
@@ -28,7 +29,14 @@ export function createApp({ db, auth, env, model }: AppDeps) {
 
   /** Rejects the request unless it carries a valid session; exposes the user to handlers. */
   const requireUser = createMiddleware<AppEnv>(async (c, next) => {
-    const session = await auth.api.getSession({ headers: c.req.raw.headers });
+    // A bad API key makes getSession throw rather than return null; that is
+    // still just "not signed in". Anything else is a real fault and propagates.
+    const session = await auth.api
+      .getSession({ headers: c.req.raw.headers })
+      .catch((e: unknown) => {
+        if (e instanceof APIError) return null;
+        throw e;
+      });
     if (!session) return c.json({ error: 'unauthorized' }, 401);
     c.set('user', session.user);
     await next();

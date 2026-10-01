@@ -69,3 +69,32 @@ describe('loadEnv', () => {
     );
   });
 });
+
+describe('api keys', () => {
+  it('act as their owner and nothing more', async () => {
+    const { app, signIn, createKey } = await createHarness();
+    const ada = await signIn('ada@example.test');
+    const bob = await signIn('bob@example.test');
+    const created = await app.request('/api/projects', {
+      method: 'POST',
+      headers: { ...Object.fromEntries(ada.headers), 'content-type': 'application/json' },
+      body: JSON.stringify({ name: 'Sera' }),
+    });
+    const { id } = (await created.json()) as { id: string };
+
+    const adaKey = await createKey(ada.user.id);
+    expect(adaKey.key.startsWith('sysarch_')).toBe(true);
+    const asAda = (path: string) => app.request(path, { headers: { 'x-api-key': adaKey.key } });
+    expect(await (await asAda('/api/me')).json()).toMatchObject({ email: 'ada@example.test' });
+    expect((await asAda(`/api/projects/${id}`)).status).toBe(200);
+
+    const bobKey = await createKey(bob.user.id);
+    const asBob = await app.request(`/api/projects/${id}`, {
+      headers: { 'x-api-key': bobKey.key },
+    });
+    expect(asBob.status).toBe(404);
+
+    const forged = await app.request('/api/me', { headers: { 'x-api-key': 'sysarch_nope' } });
+    expect(forged.status).toBe(401);
+  });
+});

@@ -23,7 +23,10 @@ export const testEnv: Env = {
 export async function createHarness(env: Env = testEnv, model?: ModelTurn) {
   const db = openDb(':memory:');
   const { app, events } = createApp({ db, auth: createAuth(db, env), env, model });
-  const testAuth = betterAuth({ ...authOptions(db, env), plugins: [testUtils()] });
+  const testAuth = betterAuth({
+    ...authOptions(db, env),
+    plugins: [...authOptions(db, env).plugins, testUtils()],
+  });
   const helpers = (await testAuth.$context).test;
 
   const signIn = async (email: string) => {
@@ -32,5 +35,9 @@ export async function createHarness(env: Env = testEnv, model?: ModelTurn) {
     return { user, headers };
   };
 
-  return { db, app, events, signIn };
+  /** A personal API key for the user, as the web app would create one. */
+  const createKey = async (userId: string) =>
+    testAuth.api.createApiKey({ body: { userId, name: 'mcp' } });
+
+  return { db, app, events, signIn, createKey };
 }
