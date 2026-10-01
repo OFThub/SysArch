@@ -99,6 +99,7 @@ The server reads these variables and refuses to start if one is invalid.
 | `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET` | no       |                     | Enables GitHub sign-in when both are set.                                                    |
 | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | no       |                     | Enables Google sign-in when both are set.                                                    |
 | `WEB_DIST`                                 | no       |                     | Directory of the built web app to serve from the API process. Set by the Docker image.       |
+| `ANTHROPIC_API_KEY`                        | no       |                     | Enables the AI assistant. Never sent to the browser.                                         |
 
 ## Development
 

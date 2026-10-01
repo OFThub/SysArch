@@ -56,3 +56,20 @@ export const proposals = sqliteTable(
   },
   (t) => [index('proposals_project_idx').on(t.projectId)],
 );
+
+/** The assistant chat of a project, as plain text turns. */
+export const chatMessages = sqliteTable(
+  'chat_messages',
+  {
+    id: text('id').primaryKey(),
+    projectId: text('project_id')
+      .notNull()
+      .references(() => projects.id, { onDelete: 'cascade' }),
+    role: text('role', { enum: ['user', 'assistant'] }).notNull(),
+    content: text('content').notNull(),
+    /** The proposal this reply produced, if any. */
+    proposalId: text('proposal_id').references(() => proposals.id, { onDelete: 'set null' }),
+    createdAt: integer('created_at', { mode: 'timestamp_ms' }).default(now).notNull(),
+  },
+  (t) => [index('chat_messages_project_idx').on(t.projectId, t.createdAt)],
+);

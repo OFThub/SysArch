@@ -6,7 +6,9 @@ import { secureHeaders } from 'hono/secure-headers';
 import type { Auth, SessionUser } from './auth';
 import type { Db } from './db';
 import { enabledProviders, type Env } from './env';
+import type { ModelTurn } from './ai/assistant';
 import { createEventBus } from './events';
+import { assistantRoutes } from './routes/assistant';
 import { MAX_BODY_BYTES, projectRoutes } from './routes/projects';
 import { proposalRoutes } from './routes/proposals';
 
@@ -16,9 +18,11 @@ export interface AppDeps {
   db: Db;
   auth: Auth;
   env: Env;
+  /** The assistant's model call; without it the assistant reports itself unavailable. */
+  model?: ModelTurn;
 }
 
-export function createApp({ db, auth, env }: AppDeps) {
+export function createApp({ db, auth, env, model }: AppDeps) {
   // Live updates for open editors (SSE); the assistant publishes here too.
   const events = createEventBus();
 
@@ -50,7 +54,8 @@ export function createApp({ db, auth, env }: AppDeps) {
       }),
     )
     .route('/projects', projectRoutes(db, events))
-    .route('/projects', proposalRoutes(db, events));
+    .route('/projects', proposalRoutes(db, events))
+    .route('/projects', assistantRoutes(db, events, model));
 
   const app = new Hono();
   app.use('*', secureHeaders());

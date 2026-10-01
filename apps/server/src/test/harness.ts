@@ -1,5 +1,6 @@
 import { betterAuth } from 'better-auth';
 import { testUtils } from 'better-auth/plugins';
+import type { ModelTurn } from '../ai/assistant';
 import { createApp } from '../app';
 import { authOptions, createAuth } from '../auth';
 import { openDb } from '../db';
@@ -19,9 +20,9 @@ export const testEnv: Env = {
  * db and secret, so the real app verifies genuine signed cookies. The app
  * itself has no test bypass.
  */
-export async function createHarness(env: Env = testEnv) {
+export async function createHarness(env: Env = testEnv, model?: ModelTurn) {
   const db = openDb(':memory:');
-  const { app, events } = createApp({ db, auth: createAuth(db, env), env });
+  const { app, events } = createApp({ db, auth: createAuth(db, env), env, model });
   const testAuth = betterAuth({ ...authOptions(db, env), plugins: [testUtils()] });
   const helpers = (await testAuth.$context).test;
 

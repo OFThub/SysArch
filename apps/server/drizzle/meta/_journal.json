@@ -15,6 +15,13 @@
       "when": 1790792973811,
       "tag": "0001_proposals",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1790867251191,
+      "tag": "0002_chat_messages",
+      "breakpoints": true
     }
   ]
 }
