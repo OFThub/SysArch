@@ -21,7 +21,7 @@ export const testEnv: Env = {
  */
 export async function createHarness(env: Env = testEnv) {
   const db = openDb(':memory:');
-  const { app } = createApp({ db, auth: createAuth(db, env), env });
+  const { app, events } = createApp({ db, auth: createAuth(db, env), env });
   const testAuth = betterAuth({ ...authOptions(db, env), plugins: [testUtils()] });
   const helpers = (await testAuth.$context).test;
 
@@ -31,5 +31,5 @@ export async function createHarness(env: Env = testEnv) {
     return { user, headers };
   };
 
-  return { db, app, signIn };
+  return { db, app, events, signIn };
 }

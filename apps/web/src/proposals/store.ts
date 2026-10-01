@@ -44,6 +44,18 @@ export async function loadProposals(projectId: string) {
   }
 }
 
+/** A live update: new list, and the open review closes if its proposal is gone. */
+export async function refreshProposals(projectId: string) {
+  try {
+    const list = await listProposals(projectId);
+    set((s) =>
+      list.some((p) => p.id === s.openId) ? { list } : { list, openId: null, accepted: [] },
+    );
+  } catch {
+    // The next event or project load tries again.
+  }
+}
+
 export function openProposal(id: string) {
   const p = get().list.find((x) => x.id === id);
   if (p) set({ openId: id, accepted: p.ops.map((_, i) => i), conflicts: [], notice: null });

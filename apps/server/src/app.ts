@@ -6,6 +6,7 @@ import { secureHeaders } from 'hono/secure-headers';
 import type { Auth, SessionUser } from './auth';
 import type { Db } from './db';
 import { enabledProviders, type Env } from './env';
+import { createEventBus } from './events';
 import { MAX_BODY_BYTES, projectRoutes } from './routes/projects';
 import { proposalRoutes } from './routes/proposals';
 
@@ -18,6 +19,9 @@ export interface AppDeps {
 }
 
 export function createApp({ db, auth, env }: AppDeps) {
+  // Live updates for open editors (SSE); the assistant publishes here too.
+  const events = createEventBus();
+
   /** Rejects the request unless it carries a valid session; exposes the user to handlers. */
   const requireUser = createMiddleware<AppEnv>(async (c, next) => {
     const session = await auth.api.getSession({ headers: c.req.raw.headers });
@@ -45,8 +49,8 @@ export function createApp({ db, auth, env }: AppDeps) {
         onError: (c) => c.json({ error: 'payload_too_large' }, 413),
       }),
     )
-    .route('/projects', projectRoutes(db))
-    .route('/projects', proposalRoutes(db));
+    .route('/projects', projectRoutes(db, events))
+    .route('/projects', proposalRoutes(db, events));
 
   const app = new Hono();
   app.use('*', secureHeaders());
@@ -56,7 +60,7 @@ export function createApp({ db, auth, env }: AppDeps) {
       origin: env.WEB_ORIGIN,
       credentials: true,
       allowMethods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-      allowHeaders: ['Content-Type', 'If-Match'],
+      allowHeaders: ['Content-Type', 'If-Match', 'X-Client-Id'],
       exposeHeaders: ['ETag'],
     }),
   );
@@ -66,8 +70,9 @@ export function createApp({ db, auth, env }: AppDeps) {
   // after this (the self-hosted index.html) never turns an API typo into HTML.
   app.all('/api/*', (c) => c.json({ error: 'not_found' }, 404));
 
-  return { app, api, requireUser };
+  return { app, api, requireUser, events };
 }
 
 export type ApiType = ReturnType<typeof createApp>['api'];
 export type { Proposal } from './routes/proposals';
+export type { ProjectEvent } from './events';

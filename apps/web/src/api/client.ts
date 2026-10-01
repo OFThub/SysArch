@@ -1,11 +1,17 @@
 import type { ApiType, Proposal } from '@sysarch/server/api';
-import type { ArchDoc, OpError } from '@sysarch/shared';
+import { newId, type ArchDoc, type OpError } from '@sysarch/shared';
 import { createAuthClient } from 'better-auth/react';
 import { hc } from 'hono/client';
 import type { SaveFn } from '../sync/autosave';
 
+/**
+ * This tab's id. The server echoes it on the live events a request causes, so
+ * the tab can tell its own saves from someone else's.
+ */
+export const CLIENT_ID = newId();
+
 /** Typed client generated from the server's route chain; only types cross the package line. */
-export const api = hc<ApiType>('/api');
+export const api = hc<ApiType>('/api', { headers: { 'X-Client-Id': CLIENT_ID } });
 
 /** Better Auth on the same origin (/api/auth), proxied to the server in dev. */
 export const authClient = createAuthClient();

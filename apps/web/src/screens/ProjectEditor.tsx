@@ -7,6 +7,7 @@ import { Editor } from '../shell/Editor';
 import { ConflictBanner, SaveStatus } from '../shell/SaveStatus';
 import { useEditor } from '../store';
 import { startAutosave, useSaveStatus } from '../sync/autosave';
+import { watchProject } from '../sync/live';
 
 type Phase = 'loading' | 'ready' | 'missing' | 'failed';
 
@@ -33,6 +34,9 @@ export function ProjectEditor({ id }: { id: string }) {
       current = false;
     };
   }, [id, attempt]);
+
+  // Live updates (other tabs, new proposals) while the project is open.
+  useEffect(() => (phase === 'ready' ? watchProject(id) : undefined), [phase, id]);
 
   const reload = () => {
     setPhase('loading');

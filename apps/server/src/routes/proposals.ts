@@ -14,6 +14,7 @@ import { validator } from 'hono/validator';
 import { z } from 'zod';
 import type { AppEnv } from '../app';
 import { schema, type Db } from '../db';
+import { clientOrigin, type EventBus } from '../events';
 import { etag, issues, owned, readDoc } from './projects';
 
 const { projects, proposals } = schema;
@@ -49,7 +50,7 @@ export interface Proposal {
  * can correct itself; nothing half-valid is ever stored.
  */
 export function createProposal(
-  db: Db,
+  { db, events }: { db: Db; events: EventBus },
   project: { id: string; revision: number; doc: ArchDoc },
   source: Proposal['source'],
   summary: string,
@@ -69,11 +70,13 @@ export function createProposal(
   db.insert(proposals)
     .values({ ...proposal, projectId: project.id })
     .run();
+  // Open editors list it at once, wherever it came from.
+  events.publish(project.id, { type: 'proposal.changed' });
   return { proposal };
 }
 
 /** Proposal review under /projects/:id/proposals. Session and body checks come from the mount. */
-export function proposalRoutes(db: Db) {
+export function proposalRoutes(db: Db, events: EventBus) {
   const loadProject = (id: string, ownerId: string) => {
     const row = db.select().from(projects).where(owned(id, ownerId)).get();
     return row && { row, doc: readDoc(row.doc) };
@@ -110,7 +113,7 @@ export function proposalRoutes(db: Db) {
         const doc = project.doc;
         if ('error' in doc) return c.json({ error: 'corrupt_doc' }, 500);
         const { summary, ops } = c.req.valid('json');
-        const r = createProposal(db, { ...project.row, doc }, 'mcp', summary, ops);
+        const r = createProposal({ db, events }, { ...project.row, doc }, 'mcp', summary, ops);
         if ('errors' in r) return c.json({ error: 'invalid_ops', errors: r.errors }, 422);
         return c.json({ proposal: r.proposal }, 201);
       },
@@ -164,6 +167,9 @@ export function proposalRoutes(db: Db) {
           return updated !== undefined;
         });
         if (!landed) return c.json({ error: 'revision_conflict' }, 409);
+        const origin = clientOrigin(c.req.header('X-Client-Id'));
+        events.publish(id, { type: 'doc.updated', revision: base + 1, origin });
+        events.publish(id, { type: 'proposal.changed', origin });
         c.header('ETag', etag(base + 1));
         return c.json({ revision: base + 1, doc: result.doc });
       },
@@ -184,7 +190,12 @@ export function proposalRoutes(db: Db) {
         )
         .returning({ id: proposals.id })
         .get();
-      return rejected ? c.body(null, 204) : c.json({ error: 'not_found' }, 404);
+      if (!rejected) return c.json({ error: 'not_found' }, 404);
+      events.publish(project.row.id, {
+        type: 'proposal.changed',
+        origin: clientOrigin(c.req.header('X-Client-Id')),
+      });
+      return c.body(null, 204);
     });
 }
 
