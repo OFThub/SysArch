@@ -26,6 +26,8 @@ export type ArchNodeData = {
   issue?: CanvasIssue;
   /** Set while a proposal is previewed: what it would do to this node. */
   diff?: DiffMark;
+  /** How many components it contains (see drill views). */
+  children: number;
 };
 export type ArchFlowNode = Node<ArchNodeData, 'arch'>;
 export type FrameData = { domain: Domain };
@@ -159,6 +161,10 @@ export function buildFlow(doc: ArchDoc, viewId: string): FlowModel {
   const fallbackX = placed.length ? Math.max(...placed.map((p) => p.x)) + FALLBACK_GAP_X : 0;
   let unplaced = 0;
 
+  const childCount = new Map<string, number>();
+  for (const n of doc.nodes)
+    if (n.parent !== undefined) childCount.set(n.parent, (childCount.get(n.parent) ?? 0) + 1);
+
   const nodes: ArchFlowNode[] = shown.map((n) => ({
     id: n.id,
     type: 'arch',
@@ -166,6 +172,7 @@ export function buildFlow(doc: ArchDoc, viewId: string): FlowModel {
     data: {
       node: n,
       proxy: proxyIds.has(n.id),
+      children: childCount.get(n.id) ?? 0,
       pads: {
         in: orderPads(n, [...pads.get(n.id)!.in.values()]),
         out: orderPads(n, [...pads.get(n.id)!.out.values()]),
@@ -184,6 +191,24 @@ export function buildFlow(doc: ArchDoc, viewId: string): FlowModel {
       : [];
 
   return { nodes, edges, frames };
+}
+
+/**
+ * Where a drill view sits: the domain tab it was opened from, then the
+ * components from the outermost down to the one being shown. null for
+ * anything but a drill view.
+ */
+export function drillPath(
+  doc: ArchDoc,
+  viewId: string,
+): { domain: Domain; nodes: ArchNode[] } | null {
+  const view = doc.views.find((v) => v.id === viewId);
+  if (view?.kind !== 'drill') return null;
+  const byId = new Map(doc.nodes.map((n) => [n.id, n]));
+  const nodes: ArchNode[] = [];
+  for (let n = byId.get(view.rootNodeId!); n; n = n.parent ? byId.get(n.parent) : undefined)
+    nodes.unshift(n);
+  return nodes.length ? { domain: nodes[0]!.domain, nodes } : null;
 }
 
 /** Pins keep their header order (as on the physical part); protocols sort by name. */

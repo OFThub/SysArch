@@ -94,3 +94,52 @@ describe('editor store', () => {
     expect(s().selection).toEqual({ nodeIds: [], edgeIds: [] });
   });
 });
+
+describe('drill-down', () => {
+  const cache = {
+    id: 'cache',
+    domain: 'fullstack' as const,
+    type: 'cache',
+    label: 'Redis',
+    props: {},
+  };
+
+  it('opens a node in its own view without an undo step, and reuses that view', () => {
+    s().drillInto('api');
+    const view = s().doc.views.find((v) => v.id === s().activeViewId)!;
+    expect(view).toMatchObject({ kind: 'drill', rootNodeId: 'api' });
+    expect(history().pastStates).toHaveLength(0);
+
+    s().setActiveView('overview');
+    s().drillInto('api');
+    expect(s().activeViewId).toBe(view.id);
+    expect(s().doc.views.filter((v) => v.kind === 'drill')).toHaveLength(1);
+  });
+
+  it('puts components added or pasted inside the open component', () => {
+    s().drillInto('api');
+    s().addNode(cache, s().activeViewId, { x: 0, y: 0 });
+    expect(s().doc.nodes.find((n) => n.id === 'cache')!.parent).toBe('api');
+
+    // Outside a drill view nothing is adopted.
+    s().setActiveView('fullstack');
+    s().addNode({ ...cache, id: 'cache2' }, 'fullstack', { x: 0, y: 0 });
+    expect(s().doc.nodes.find((n) => n.id === 'cache2')!.parent).toBeUndefined();
+
+    s().drillInto('api');
+    s().paste(
+      {
+        kind: 'sysarch/clip',
+        nodes: [{ ...cache, id: 'c3' }],
+        edges: [],
+        positions: {},
+        customTypes: [],
+      },
+      { x: 10, y: 10 },
+    );
+    const pasted = s().doc.nodes.find(
+      (n) => n.label === 'Redis' && !['cache', 'cache2'].includes(n.id),
+    )!;
+    expect(pasted.parent).toBe('api');
+  });
+});

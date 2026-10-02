@@ -205,6 +205,11 @@ export function Canvas() {
         onEdgesChange={onEdgesChange}
         onNodeDragStop={onNodeDragStop}
         onConnect={onConnect}
+        // Double-click opens a component's inside (its drill view).
+        onNodeDoubleClick={(_, n) => {
+          if (!preview && n.type === 'arch') useEditor.getState().drillInto(n.id);
+        }}
+        zoomOnDoubleClick={false}
         deleteKeyCode={null}
         connectionMode={ConnectionMode.Loose}
         isValidConnection={(c) => c.source !== c.target}
@@ -214,6 +219,8 @@ export function Canvas() {
         nodesConnectable={!preview}
         elementsSelectable={!preview}
         fitView
+        // A view with one or two nodes (a fresh drill view) would otherwise fit at 2x.
+        fitViewOptions={{ maxZoom: 1 }}
         minZoom={0.2}
       >
         <CanvasToolbar onLayout={() => void runLayout()} busy={layingOut || preview !== null} />

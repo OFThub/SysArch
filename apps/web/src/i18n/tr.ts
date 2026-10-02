@@ -102,6 +102,12 @@ export const tr = {
   side: {
     tabs: 'Yan panel',
   },
+  drill: {
+    open: 'İç yapısını aç',
+    children: (n: number) => `${n} alt bileşen`,
+    hint: 'İç yapısını açmak için çift tıkla.',
+    path: 'Konum',
+  },
   assistant: {
     tab: 'Asistan',
     empty:
