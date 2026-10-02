@@ -7,6 +7,7 @@ import {
   type ArchNode,
   type Domain,
 } from '../schema';
+import { flowTrace } from '../flows';
 import { describeIssue, RULES, validate, type Lang } from '../validate';
 
 export interface ExportFile {
@@ -36,6 +37,9 @@ const T = {
       connection: ['id', 'from', 'to', 'protocol', 'pins', 'payload'],
     },
     notes: 'Notes',
+    flows: 'Flows',
+    flowLine: (steps: number, ms: number, sla?: number) =>
+      `${steps} steps, ${ms} ms end to end${sla === undefined ? '' : ` (target ${sla} ms)`}`,
     domain: { fullstack: 'Full stack', ai: 'AI', hardware: 'Hardware' } as Record<Domain, string>,
   },
   tr: {
@@ -59,6 +63,9 @@ const T = {
       connection: ['kimlik', 'kaynak', 'hedef', 'protokol', 'pinler', 'veri'],
     },
     notes: 'Notlar',
+    flows: 'Akışlar',
+    flowLine: (steps: number, ms: number, sla?: number) =>
+      `${steps} adım, uçtan uca ${ms} ms${sla === undefined ? '' : ` (hedef ${sla} ms)`}`,
     domain: { fullstack: 'Full stack', ai: 'Yapay zeka', hardware: 'Donanım' } as Record<
       Domain,
       string
@@ -112,6 +119,28 @@ function mermaid(nodes: ArchNode[], edges: ArchEdge[]) {
     ...edges
       .filter((e) => ids.has(e.source) && ids.has(e.target))
       .map((e) => `  ${mid(e.source)} -->|${e.protocol}| ${mid(e.target)}`),
+    '```',
+  ].join('\n');
+}
+
+/** A flow as a sequence diagram, each step drawn in the direction the flow travels it. */
+function sequence(
+  steps: string[],
+  visited: string[],
+  nodes: Map<string, ArchNode>,
+  edges: Map<string, ArchEdge>,
+) {
+  const label = (id: string) => mlabel(nodes.get(id)?.label ?? id);
+  return [
+    '```mermaid',
+    'sequenceDiagram',
+    ...[...new Set(visited)].map((id) => `  participant ${mid(id)} as ${label(id)}`),
+    // A broken flow draws the steps it got through.
+    ...visited.slice(1).map((to, i) => {
+      const e = edges.get(steps[i]!)!;
+      const what = e.payload ? `${e.protocol} ${mlabel(e.payload.schemaName)}` : e.protocol;
+      return `  ${mid(visited[i]!)}->>${mid(to)}: ${what}`;
+    }),
     '```',
   ].join('\n');
 }
@@ -210,6 +239,21 @@ export function architectureMarkdown(
     const members = nodes.filter((n) => n.domain === d);
     if (!members.length) continue;
     out.push(`### ${t.domain[d]}`, '', mermaid(members, edges), '');
+  }
+
+  if (doc.flows.length) {
+    out.push(`## ${t.flows}`, '');
+    for (const f of [...doc.flows].sort(byId)) {
+      const trace = flowTrace(doc, f);
+      out.push(
+        `### ${f.name} ${code(f.id)}`,
+        '',
+        t.flowLine(f.steps.length, Math.round(trace.totalMs * 10) / 10, f.slaMs),
+        '',
+        sequence(f.steps, trace.nodeIds, node, new Map(doc.edges.map((e) => [e.id, e]))),
+        '',
+      );
+    }
   }
 
   if (doc.boundaries.length) {

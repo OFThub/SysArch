@@ -4,6 +4,7 @@ import { runRules } from './engine';
 import { i2cAddressConflict, missingPinRoles, pinConflict, pinRoleUnsupported } from './rules/bus';
 import { protocolMismatch, unknownType } from './rules/compat';
 import { frontendToStore, modelWithoutSource, orphanNode } from './rules/design';
+import { flowBroken, flowSla } from './rules/flows';
 import { pinVoltage } from './rules/voltage';
 import { SIM_RULES } from '../simulate';
 import type { Issue, Rule } from './types';
@@ -24,7 +25,9 @@ export const RULES: readonly Rule[] = [
   frontendToStore,
   modelWithoutSource,
   orphanNode,
+  flowBroken,
   ...SIM_RULES,
+  flowSla,
 ];
 
 export const validate = (doc: ArchDoc, catalog: Catalog) => runRules(doc, catalog, RULES);
