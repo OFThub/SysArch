@@ -7,6 +7,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-10-02
+
+### Added
+
+- AI architecture assistant in the editor's "Asistan" tab: asks and
+  answers about the architecture, or proposes changes for the current
+  view and selection. Runs on the server with `ANTHROPIC_API_KEY`; it
+  sees the issues its own changes introduce and fixes them before
+  replying.
+- Proposals: every change from the assistant or an MCP client waits in
+  the "Öneriler" tab. Each one is previewed on the canvas (new, changed
+  and removed parts marked), applied in full or in part, and undone in
+  one step. Changes made since the proposal are kept; changes that no
+  longer apply are flagged.
+- MCP server (`apps/mcp`) with `list_projects`, `get_architecture`,
+  `list_issues`, `export` and `propose_changes`.
+- Personal API keys for MCP clients under "API anahtarları".
+- Live updates: open editors pick up saves from other tabs and new
+  proposals without a reload.
+
+### Fixed
+
+- The save status stayed on "Kaydedilmemiş değişiklikler" after an edit
+  was undone before it was saved.
+- An invalid API key answered 500 instead of 401.
+
 ## [0.1.0] - 2026-09-30
 
 ### Added
@@ -38,5 +64,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Continuous integration for formatting, types, lint, unit and end-to-end
   tests.
 
-[unreleased]: https://github.com/OFThub/SysArch/compare/v0.1.0...HEAD
+[unreleased]: https://github.com/OFThub/SysArch/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/OFThub/SysArch/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/OFThub/SysArch/releases/tag/v0.1.0
