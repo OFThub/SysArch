@@ -85,6 +85,26 @@ Keyboard shortcuts in the editor:
 | Delete, Backspace                  | Delete the selection; asks first when connected edges go with it |
 | Esc                                | Clear the selection                                              |
 
+### AI assistant and MCP clients
+
+With `ANTHROPIC_API_KEY` set on the server, the editor's **Asistan** tab
+answers questions about the architecture and proposes changes. MCP clients
+such as Claude Code can do the same through `apps/mcp`. Either way, a
+change arrives in the **Öneriler** tab as a proposal: it is previewed on
+the canvas and applied only when you approve it, in whole or in part.
+
+To connect an MCP client, create a key under **API anahtarları** on the
+project list, build the server and register it as a stdio server:
+
+```bash
+pnpm --filter @sysarch/mcp build
+claude mcp add sysarch --env SYSARCH_URL=http://localhost:5173 \
+  --env SYSARCH_API_KEY=sysarch_... -- node /absolute/path/to/apps/mcp/dist/index.js
+```
+
+Its tools are `list_projects`, `get_architecture`, `list_issues`, `export`
+and `propose_changes`.
+
 ## Configuration
 
 The server reads these variables and refuses to start if one is invalid.
