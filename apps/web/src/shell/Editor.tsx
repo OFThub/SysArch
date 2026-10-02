@@ -3,9 +3,9 @@ import { useCallback, useState, type ReactNode } from 'react';
 import { AnalysisPanel } from '../analysis/AnalysisPanel';
 import { Canvas } from '../canvas/Canvas';
 import { tr } from '../i18n/tr';
-import { Inspector } from '../panels/Inspector';
 import { Palette } from '../panels/Palette';
 import { ExportMenu } from './ExportMenu';
+import { SidePanel } from './SidePanel';
 import { ThemeSwitch } from './ThemeSwitch';
 import { useShortcuts } from './useShortcuts';
 import { ViewTabs } from './ViewTabs';
@@ -82,7 +82,7 @@ export function Editor({ saveStatus, banner }: { saveStatus: ReactNode; banner?:
           </div>
           <AnalysisPanel />
         </main>
-        <Inspector />
+        <SidePanel />
       </div>
       {pending && (
         <ConfirmDialog

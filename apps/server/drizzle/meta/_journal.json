@@ -8,6 +8,27 @@
       "when": 1790620391066,
       "tag": "0000_init",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1790792973811,
+      "tag": "0001_proposals",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1790867251191,
+      "tag": "0002_chat_messages",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1790878813296,
+      "tag": "0003_api_keys",
+      "breakpoints": true
     }
   ]
 }

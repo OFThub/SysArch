@@ -11,7 +11,10 @@ import type { Env } from '../env';
  */
 export async function mintSession(env: Env, user: { email: string; name: string }) {
   const db = openDb(env.DATABASE_PATH);
-  const auth = betterAuth({ ...authOptions(db, env), plugins: [testUtils()] });
+  const auth = betterAuth({
+    ...authOptions(db, env),
+    plugins: [...authOptions(db, env).plugins, testUtils()],
+  });
   const t = (await auth.$context).test;
   const saved = await t.saveUser(t.createUser(user));
   const { cookies } = await t.login({ userId: saved.id });

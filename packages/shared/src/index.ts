@@ -4,6 +4,7 @@ export * from './catalog';
 export * from './templates';
 export * from './id';
 export * from './edit';
+export * from './ops';
 export * from './validate';
 export * from './simulate';
 export * from './export';

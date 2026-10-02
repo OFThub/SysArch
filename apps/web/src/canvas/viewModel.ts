@@ -8,6 +8,7 @@ import {
   type PinRole,
 } from '@sysarch/shared';
 import type { Edge, Node } from '@xyflow/react';
+import type { DiffMark } from '../proposals/preview';
 
 /** A labelled connection point on a node: a pin name for hardware, a protocol otherwise. */
 export interface Pad {
@@ -23,6 +24,8 @@ export type ArchNodeData = {
   proxy: boolean;
   pads: { in: Pad[]; out: Pad[] };
   issue?: CanvasIssue;
+  /** Set while a proposal is previewed: what it would do to this node. */
+  diff?: DiffMark;
 };
 export type ArchFlowNode = Node<ArchNodeData, 'arch'>;
 export type FrameData = { domain: Domain };
@@ -40,6 +43,7 @@ export type WireData = {
    */
   lane: number;
   issue?: CanvasIssue;
+  diff?: DiffMark;
 };
 export type ArchFlowEdge = Edge<WireData, 'wire'>;
 

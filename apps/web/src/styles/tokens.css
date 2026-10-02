@@ -23,6 +23,11 @@
   --danger: light-dark(#c7362b, #f0645a);
   /* Text on a danger fill: white on the dark red, ink on the light red (AA both ways). */
   --on-danger: light-dark(#ffffff, #1b2024);
+  /*
+   * Proposal previews only: what a change would add. Removal reuses --danger.
+   * Always paired with a dashed outline and a text tag, never color alone.
+   */
+  --diff-add: light-dark(#2e7d46, #5cc27f);
 
   /* The single shadow, for floating layers only (menus, palette, proposal card). */
   --shadow-color: light-dark(rgb(29 35 40 / 0.18), rgb(0 0 0 / 0.55));

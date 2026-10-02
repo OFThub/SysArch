@@ -17,6 +17,8 @@ const EnvSchema = z.object({
   GOOGLE_CLIENT_SECRET: optional,
   /** Built web app to serve from this process (the Docker image sets it). */
   WEB_DIST: optional,
+  /** Enables the AI assistant. Stays on the server; never sent to the browser. */
+  ANTHROPIC_API_KEY: optional,
 });
 
 export type Env = z.infer<typeof EnvSchema>;

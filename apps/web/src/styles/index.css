@@ -18,6 +18,7 @@
   --color-ch-hardware: var(--ch-hardware);
   --color-danger: var(--danger);
   --color-on-danger: var(--on-danger);
+  --color-diff-add: var(--diff-add);
   --color-transparent: transparent;
   --color-current: currentColor;
 
@@ -119,4 +120,14 @@
 .react-flow__node:focus-visible .react-flow__handle.connect,
 .react-flow__handle.connect.connectingfrom {
   opacity: 1;
+}
+
+/* Proposal ghosts: the one entrance animation, 150ms (reduced motion shortens it). */
+.diff-enter {
+  animation: diff-enter 150ms ease-out;
+}
+@keyframes diff-enter {
+  from {
+    opacity: 0;
+  }
 }

@@ -4,6 +4,11 @@ import { SeverityIcon } from '../ui/SeverityIcon';
 import type { ArchFlowEdge } from './viewModel';
 
 const LANE_GAP = 8;
+const DIFF_COLOR = {
+  added: 'var(--diff-add)',
+  removed: 'var(--danger)',
+  changed: 'var(--ink)',
+} as const;
 
 /**
  * Edge language: wired links are solid, wireless ones dashed, power a thick
@@ -34,8 +39,10 @@ export function WireEdge({
   });
   if (!data) return null;
 
-  const color = `var(--ch-${data.channel})`;
-  const opacity = selected || hover ? 1 : 0.7;
+  // In a proposal preview the change outranks the channel: added lines in
+  // the add color, removed ones faded red, changed ones in ink.
+  const color = data.diff ? DIFF_COLOR[data.diff] : `var(--ch-${data.channel})`;
+  const opacity = data.diff === 'removed' ? 0.45 : selected || hover || data.diff ? 1 : 0.7;
   const label = data.role ? `${data.edge.protocol} ${data.role}` : data.edge.protocol;
 
   return (

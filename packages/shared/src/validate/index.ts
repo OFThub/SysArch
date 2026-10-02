@@ -1,4 +1,4 @@
-import type { Catalog } from '../catalog';
+import { effectiveCatalog, type Catalog } from '../catalog';
 import type { ArchDoc } from '../schema';
 import { runRules } from './engine';
 import { i2cAddressConflict, missingPinRoles, pinConflict, pinRoleUnsupported } from './rules/bus';
@@ -6,7 +6,7 @@ import { protocolMismatch, unknownType } from './rules/compat';
 import { frontendToStore, modelWithoutSource, orphanNode } from './rules/design';
 import { pinVoltage } from './rules/voltage';
 import { SIM_RULES } from '../simulate';
-import type { Rule } from './types';
+import type { Issue, Rule } from './types';
 
 export * from './types';
 export { describeIssue, ruleContext, runRules } from './engine';
@@ -28,3 +28,9 @@ export const RULES: readonly Rule[] = [
 ];
 
 export const validate = (doc: ArchDoc, catalog: Catalog) => runRules(doc, catalog, RULES);
+
+/** Issues `after` has and `before` did not: what a proposed change would introduce. */
+export function newIssues(before: ArchDoc, after: ArchDoc): Issue[] {
+  const known = new Set(validate(before, effectiveCatalog(before.customTypes)).map((i) => i.id));
+  return validate(after, effectiveCatalog(after.customTypes)).filter((i) => !known.has(i.id));
+}

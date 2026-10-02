@@ -1,0 +1,24 @@
+{
+  "name": "@sysarch/mcp",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "bin": {
+    "sysarch-mcp": "./dist/index.js"
+  },
+  "scripts": {
+    "dev": "tsx src/index.ts",
+    "typecheck": "tsc -p tsconfig.json",
+    "build": "tsup"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/server": "^2.2.0",
+    "@sysarch/shared": "workspace:*",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "@modelcontextprotocol/client": "^2.2.0",
+    "tsup": "^8.5.1",
+    "tsx": "^4.23.15"
+  }
+}

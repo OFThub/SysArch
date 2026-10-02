@@ -1,6 +1,6 @@
 import { seraIot } from '@sysarch/shared';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { useEditor } from '../store';
+import { undo, useEditor } from '../store';
 import { startAutosave, useSaveStatus, type SaveFn } from './autosave';
 
 const s = () => useEditor.getState();
@@ -35,6 +35,19 @@ describe('autosave', () => {
     expect(save).toHaveBeenCalledTimes(1);
     expect(save.mock.calls[0]![1]).toBe(1);
     expect(s().project?.revision).toBe(2);
+    expect(useSaveStatus.getState().state).toBe('saved');
+  });
+
+  it('settles as saved when an edit is undone before it went out', async () => {
+    const save = vi.fn<SaveFn>();
+    start(save);
+
+    s().updateNode('api', { label: 'A' });
+    expect(useSaveStatus.getState().state).toBe('pending');
+    undo();
+    await vi.advanceTimersByTimeAsync(800);
+
+    expect(save).not.toHaveBeenCalled();
     expect(useSaveStatus.getState().state).toBe('saved');
   });
 

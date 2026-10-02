@@ -1,3 +1,4 @@
+import { apiKey } from '@better-auth/api-key';
 import { betterAuth, type BetterAuthOptions } from 'better-auth';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import type { Db } from './db';
@@ -24,6 +25,18 @@ export function authOptions(db: Db, env: Env) {
           google: { clientId: env.GOOGLE_CLIENT_ID, clientSecret: env.GOOGLE_CLIENT_SECRET },
         }),
     },
+    plugins: [
+      // Personal keys for the MCP server: a request with x-api-key acts as its
+      // owner, so every route's ownership check applies unchanged.
+      apiKey({
+        enableSessionForAPIKeys: true,
+        defaultPrefix: 'sysarch_',
+        // The prefix plus six characters, so keys can be told apart in the list.
+        startingCharactersConfig: { charactersLength: 14 },
+        // The default (10 a day) would stall an MCP session within minutes.
+        rateLimit: { enabled: true, timeWindow: 60_000, maxRequests: 120 },
+      }),
+    ],
   } satisfies BetterAuthOptions;
 }
 

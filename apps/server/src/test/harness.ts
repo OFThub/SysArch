@@ -1,5 +1,6 @@
 import { betterAuth } from 'better-auth';
 import { testUtils } from 'better-auth/plugins';
+import type { ModelTurn } from '../ai/assistant';
 import { createApp } from '../app';
 import { authOptions, createAuth } from '../auth';
 import { openDb } from '../db';
@@ -19,10 +20,13 @@ export const testEnv: Env = {
  * db and secret, so the real app verifies genuine signed cookies. The app
  * itself has no test bypass.
  */
-export async function createHarness(env: Env = testEnv) {
+export async function createHarness(env: Env = testEnv, model?: ModelTurn) {
   const db = openDb(':memory:');
-  const { app } = createApp({ db, auth: createAuth(db, env), env });
-  const testAuth = betterAuth({ ...authOptions(db, env), plugins: [testUtils()] });
+  const { app, events } = createApp({ db, auth: createAuth(db, env), env, model });
+  const testAuth = betterAuth({
+    ...authOptions(db, env),
+    plugins: [...authOptions(db, env).plugins, testUtils()],
+  });
   const helpers = (await testAuth.$context).test;
 
   const signIn = async (email: string) => {
@@ -31,5 +35,9 @@ export async function createHarness(env: Env = testEnv) {
     return { user, headers };
   };
 
-  return { db, app, signIn };
+  /** A personal API key for the user, as the web app would create one. */
+  const createKey = async (userId: string) =>
+    testAuth.api.createApiKey({ body: { userId, name: 'mcp' } });
+
+  return { db, app, events, signIn, createKey };
 }

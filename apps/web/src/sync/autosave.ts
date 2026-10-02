@@ -24,6 +24,12 @@ export type SaveStatus =
 
 export const useSaveStatus = create<SaveStatus>(() => ({ state: 'saved' }));
 
+// The editor has one open project, so one autosave runs at a time.
+let active: ReturnType<typeof startAutosave> | null = null;
+
+/** Saves pending edits now, e.g. before the server changes the doc on its side. */
+export const flushAutosave = () => active?.flush() ?? Promise.resolve();
+
 /**
  * Debounced autosave of the editor doc. One save at a time, each carrying the
  * revision it was based on; changes made while a save is in flight go out in
@@ -42,7 +48,13 @@ export function startAutosave(save: SaveFn, delayMs = 800) {
       return flush(keepalive);
     }
     const { doc, project } = useEditor.getState();
-    if (!project || doc === lastSaved) return;
+    if (!project) return;
+    // Back to what the server has (an edit undone, undo then redo): nothing
+    // to send, but the pending state must still clear.
+    if (doc === lastSaved) {
+      if (useSaveStatus.getState().state === 'pending') set({ state: 'saved' });
+      return;
+    }
     if (useSaveStatus.getState().state === 'conflict') return;
 
     const valid = ArchDocSchema.safeParse(doc);
@@ -95,7 +107,7 @@ export function startAutosave(save: SaveFn, delayMs = 800) {
     }
   });
 
-  return {
+  const controls = {
     flush,
     /** After a conflict: keep local edits and save them over the server copy. */
     overwrite: (serverRevision: number) => {
@@ -106,6 +118,9 @@ export function startAutosave(save: SaveFn, delayMs = 800) {
     stop: () => {
       clearTimeout(timer);
       unsubscribe();
+      if (active === controls) active = null;
     },
   };
+  active = controls;
+  return controls;
 }

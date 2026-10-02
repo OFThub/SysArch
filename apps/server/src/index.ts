@@ -3,6 +3,8 @@ import { serveStatic } from '@hono/node-server/serve-static';
 import { mkdirSync } from 'node:fs';
 import { dirname, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import Anthropic from '@anthropic-ai/sdk';
+import { anthropicTurn } from './ai/assistant';
 import { createApp } from './app';
 import { createAuth } from './auth';
 import { openDb } from './db';
@@ -14,7 +16,11 @@ if (env.DATABASE_PATH !== ':memory:') mkdirSync(dirname(env.DATABASE_PATH), { re
 // Resolved from this file, so it holds for src/ under tsx and dist/ when bundled.
 const migrations = fileURLToPath(new URL('../drizzle', import.meta.url));
 const db = openDb(env.DATABASE_PATH, migrations);
-const { app } = createApp({ db, auth: createAuth(db, env), env });
+// The key never leaves this process; without it the assistant says it is unavailable.
+const model = env.ANTHROPIC_API_KEY
+  ? anthropicTurn(new Anthropic({ apiKey: env.ANTHROPIC_API_KEY }))
+  : undefined;
+const { app } = createApp({ db, auth: createAuth(db, env), env, model });
 
 // Self-hosted: the same process serves the built web app, so the UI and the
 // API share one origin (first-party cookies, no CORS). Unknown non-API paths

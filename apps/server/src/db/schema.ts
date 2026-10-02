@@ -29,3 +29,47 @@ export const projects = sqliteTable(
   },
   (t) => [index('projects_owner_idx').on(t.ownerId)],
 );
+
+/**
+ * A change the AI or an MCP client suggests. It never touches the doc until
+ * the owner approves it; applying replays the chosen ops on the doc as it is
+ * then, so it survives edits made in between.
+ */
+export const proposals = sqliteTable(
+  'proposals',
+  {
+    id: text('id').primaryKey(),
+    projectId: text('project_id')
+      .notNull()
+      .references(() => projects.id, { onDelete: 'cascade' }),
+    source: text('source', { enum: ['chat', 'mcp'] }).notNull(),
+    summary: text('summary').notNull(),
+    // Op[]; parsed with OpSchema on the way in and again before applying.
+    ops: text('ops', { mode: 'json' }).$type<unknown>().notNull(),
+    // Issues the ops would add, computed against the base revision.
+    newIssues: text('new_issues', { mode: 'json' }).$type<unknown>().notNull(),
+    baseRevision: integer('base_revision').notNull(),
+    status: text('status', { enum: ['pending', 'applied', 'rejected'] })
+      .notNull()
+      .default('pending'),
+    createdAt: integer('created_at', { mode: 'timestamp_ms' }).default(now).notNull(),
+  },
+  (t) => [index('proposals_project_idx').on(t.projectId)],
+);
+
+/** The assistant chat of a project, as plain text turns. */
+export const chatMessages = sqliteTable(
+  'chat_messages',
+  {
+    id: text('id').primaryKey(),
+    projectId: text('project_id')
+      .notNull()
+      .references(() => projects.id, { onDelete: 'cascade' }),
+    role: text('role', { enum: ['user', 'assistant'] }).notNull(),
+    content: text('content').notNull(),
+    /** The proposal this reply produced, if any. */
+    proposalId: text('proposal_id').references(() => proposals.id, { onDelete: 'set null' }),
+    createdAt: integer('created_at', { mode: 'timestamp_ms' }).default(now).notNull(),
+  },
+  (t) => [index('chat_messages_project_idx').on(t.projectId, t.createdAt)],
+);
