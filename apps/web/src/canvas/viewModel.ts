@@ -46,6 +46,8 @@ export type WireData = {
   lane: number;
   issue?: CanvasIssue;
   diff?: DiffMark;
+  /** Set on the link a playing flow is on: which way the pulse travels. */
+  pulse?: 'forward' | 'back';
 };
 export type ArchFlowEdge = Edge<WireData, 'wire'>;
 

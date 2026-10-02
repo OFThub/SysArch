@@ -9,6 +9,7 @@ import {
   type ArchNode,
   type Catalog,
   type Clip,
+  type Flow,
 } from '@sysarch/shared';
 import { useMemo } from 'react';
 import { temporal } from 'zundo';
@@ -57,6 +58,9 @@ export interface EditorState {
   applyRemote: (doc: ArchDoc, revision: number) => void;
   /** Opens a node's inside: its drill view, created on first visit. */
   drillInto: (nodeId: string) => void;
+  /** Adds or replaces a flow; typing its name or target is one undo step. */
+  setFlow: (flow: Flow) => void;
+  removeFlow: (id: string) => void;
 }
 
 /** Nodes added while a drill view is open live inside its root. */
@@ -193,6 +197,18 @@ export const useEditor = create<EditorState>()(
             selection: { nodeIds: r.nodeIds, edgeIds: r.edgeIds },
           };
         }),
+
+      setFlow: (flow) => {
+        tagEdit(`flow:${flow.id}`);
+        set((s) => {
+          const exists = s.doc.flows.some((f) => f.id === flow.id);
+          const flows = exists ? mapById(s.doc.flows, flow.id, () => flow) : [...s.doc.flows, flow];
+          return { doc: { ...s.doc, flows } };
+        });
+      },
+
+      removeFlow: (id) =>
+        set((s) => ({ doc: { ...s.doc, flows: s.doc.flows.filter((f) => f.id !== id) } })),
 
       drillInto: (nodeId) => {
         const none = { nodeIds: [], edgeIds: [] };

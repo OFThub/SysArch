@@ -12,9 +12,10 @@ import { canvasApi } from '../canvas/canvasApi';
 import { tr } from '../i18n/tr';
 import { useCatalog, useEditor } from '../store';
 import { SeverityIcon } from '../ui/SeverityIcon';
+import { FlowsView } from './FlowsView';
 import { issueText, useIssues, viewForIssue } from './issues';
 
-type Tab = 'issues' | 'simulation';
+type Tab = 'issues' | 'simulation' | 'flows';
 const fmt = new Intl.NumberFormat('tr', { maximumFractionDigits: 1 });
 const percent = (u?: number) => (u === undefined ? '—' : `%${Math.round(u * 100)}`);
 
@@ -23,6 +24,7 @@ export function AnalysisPanel() {
   const issues = useIssues();
   const [tab, setTab] = useState<Tab>('issues');
   const [open, setOpen] = useState(true);
+  const flowCount = useEditor((s) => s.doc.flows.length);
   const counts = (['error', 'warning', 'info'] as Severity[]).map((s) => ({
     s,
     n: issues.filter((i) => i.severity === s).length,
@@ -35,7 +37,7 @@ export function AnalysisPanel() {
     >
       <div className="flex h-9 items-stretch gap-1 px-2">
         <div role="tablist" className="flex">
-          {(['issues', 'simulation'] as const).map((t) => (
+          {(['issues', 'simulation', 'flows'] as const).map((t) => (
             <button
               key={t}
               role="tab"
@@ -46,10 +48,11 @@ export function AnalysisPanel() {
               }}
               className="flex items-center gap-2 border-b-2 border-transparent px-3 text-sm text-ink-muted aria-selected:border-ink aria-selected:text-ink"
             >
-              {tr.analysis[t]}
+              {t === 'flows' ? tr.flows.tab : tr.analysis[t]}
               {t === 'issues' && issues.length > 0 && (
                 <span className="tabular-nums">{issues.length}</span>
               )}
+              {t === 'flows' && flowCount > 0 && <span className="tabular-nums">{flowCount}</span>}
             </button>
           ))}
         </div>
@@ -79,7 +82,13 @@ export function AnalysisPanel() {
       {open && (
         // Sized to its content, so "no issues" costs the canvas one line, not 224px.
         <div className="max-h-56 overflow-y-auto border-t border-line">
-          {tab === 'issues' ? <IssueList issues={issues} /> : <SimulationView />}
+          {tab === 'issues' ? (
+            <IssueList issues={issues} />
+          ) : tab === 'simulation' ? (
+            <SimulationView />
+          ) : (
+            <FlowsView />
+          )}
         </div>
       )}
     </section>

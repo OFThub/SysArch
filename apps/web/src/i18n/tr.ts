@@ -102,6 +102,25 @@ export const tr = {
   side: {
     tabs: 'Yan panel',
   },
+  flows: {
+    tab: 'Akışlar',
+    create: 'Seçili bağlantılardan akış oluştur',
+    notPath:
+      'Seçili bağlantılar tek bir yol oluşturmuyor. Uç uca bağlı bağlantıları seçip yeniden dene.',
+    empty:
+      'Henüz akış yok. Bir isteğin ya da verinin izlediği yolu oluşturan bağlantıları seç, sonra akış oluştur.',
+    defaultName: (n: number) => `Akış ${n}`,
+    name: 'Akış adı',
+    steps: (n: number) => `${n} adım`,
+    total: 'Süre',
+    sla: 'Hedef',
+    over: 'Hedefi aşıyor',
+    broken: 'Kopuk',
+    show: 'Göster',
+    play: 'Oynat',
+    stop: 'Durdur',
+    remove: 'Sil',
+  },
   drill: {
     open: 'İç yapısını aç',
     children: (n: number) => `${n} alt bileşen`,

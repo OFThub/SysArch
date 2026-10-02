@@ -143,3 +143,19 @@ describe('drill-down', () => {
     expect(pasted.parent).toBe('api');
   });
 });
+
+describe('flows', () => {
+  it('adds, renames as one undo step, and removes a flow', () => {
+    const flow = { id: 'f', name: 'A', steps: ['e-publish'] };
+    s().setFlow(flow);
+    s().setFlow({ ...flow, name: 'Ak' });
+    s().setFlow({ ...flow, name: 'Akış' });
+    expect(s().doc.flows).toEqual([{ ...flow, name: 'Akış' }]);
+    // Typing the name is coalesced with creating it.
+    expect(history().pastStates).toHaveLength(1);
+    s().removeFlow('f');
+    expect(s().doc.flows).toEqual([]);
+    undo();
+    expect(s().doc.flows.map((f) => f.name)).toEqual(['Akış']);
+  });
+});

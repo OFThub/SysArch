@@ -11,7 +11,9 @@ import {
 } from '@xyflow/react';
 import '@xyflow/react/dist/base.css';
 import { useCallback, useEffect, useMemo, useRef, useState, type DragEvent } from 'react';
+import { useShallow } from 'zustand/react/shallow';
 import { issueIndex, issueText, useIssues, type IssueMark } from '../analysis/issues';
+import { pulseAt, usePlayback } from '../analysis/playback';
 import { tr } from '../i18n/tr';
 import { createNode } from '../panels/paletteItems';
 import { usePreview } from '../proposals/store';
@@ -102,6 +104,13 @@ export function Canvas() {
     void runLayout();
   }, [preview, unplaced, measured, layingOut, runLayout, viewId]);
 
+  // The link a playing flow is on, and which way it travels it.
+  const playing = usePlayback(useShallow((s) => ({ flowId: s.flowId, step: s.step })));
+  const pulse = useMemo(
+    () => pulseAt(doc, playing.flowId, playing.step),
+    [doc, playing.flowId, playing.step],
+  );
+
   const issues = useIssues();
   const marks = useMemo(() => issueIndex(issues), [issues]);
 
@@ -126,9 +135,19 @@ export function Canvas() {
       const issue = badged.has(id) ? undefined : badge(marks.edges.get(id));
       badged.add(id);
       const diff = preview?.edges.get(id);
-      return { ...e, selected: selected.has(id), data: { ...e.data!, issue, diff } };
+      const at = pulse?.edgeId === id ? pulse : undefined;
+      return {
+        ...e,
+        selected: selected.has(id),
+        data: {
+          ...e.data!,
+          issue,
+          diff,
+          ...(at && { pulse: at.reverse ? ('back' as const) : ('forward' as const) }),
+        },
+      };
     });
-  }, [model.edges, selection.edgeIds, marks, preview]);
+  }, [model.edges, selection.edgeIds, marks, preview, pulse]);
 
   const onNodesChange = useCallback((changes: NodeChange[]) => {
     applySelect(changes, 'nodeIds', (id) => id);
