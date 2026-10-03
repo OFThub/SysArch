@@ -61,6 +61,8 @@ export interface EditorState {
   /** Adds or replaces a flow; typing its name or target is one undo step. */
   setFlow: (flow: Flow) => void;
   removeFlow: (id: string) => void;
+  /** A doc written in the code editor; a burst of typing is one undo step. */
+  applyCode: (doc: ArchDoc) => void;
 }
 
 /** Nodes added while a drill view is open live inside its root. */
@@ -225,6 +227,21 @@ export const useEditor = create<EditorState>()(
           selection: none,
         }));
         history.resume();
+      },
+
+      applyCode: (doc) => {
+        tagEdit('code');
+        set((s) => {
+          const nodes = new Set(doc.nodes.map((n) => n.id));
+          const edges = new Set(doc.edges.map((e) => e.id));
+          return {
+            doc,
+            selection: {
+              nodeIds: s.selection.nodeIds.filter((id) => nodes.has(id)),
+              edgeIds: s.selection.edgeIds.filter((id) => edges.has(id)),
+            },
+          };
+        });
       },
 
       applyRemote: (doc, revision) =>

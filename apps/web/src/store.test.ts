@@ -1,4 +1,4 @@
-import { seraIot } from '@sysarch/shared';
+import { removeElements, seraIot } from '@sysarch/shared';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { undo, useEditor } from './store';
 
@@ -157,5 +157,24 @@ describe('flows', () => {
     expect(s().doc.flows).toEqual([]);
     undo();
     expect(s().doc.flows.map((f) => f.name)).toEqual(['Akış']);
+  });
+});
+
+describe('code editor', () => {
+  it('applies typed code as one undo step and drops a removed node from the selection', () => {
+    const before = s().doc;
+    s().setSelection({ nodeIds: ['api', 'dashboard'], edgeIds: [] });
+    const rename = (label: string) => ({
+      ...s().doc,
+      nodes: s().doc.nodes.map((n) => (n.id === 'api' ? { ...n, label } : n)),
+    });
+    s().applyCode(rename('Sera'));
+    s().applyCode(rename('Sera servisi'));
+    s().applyCode(removeElements(s().doc, ['dashboard'], []));
+
+    expect(s().selection.nodeIds).toEqual(['api']);
+    expect(history().pastStates).toHaveLength(1);
+    undo();
+    expect(s().doc).toEqual(before);
   });
 });

@@ -5,11 +5,15 @@ import { redo, undo, useEditor } from '../store';
 
 const PASTE_OFFSET = { x: 32, y: 32 };
 
-// Shortcuts must never steal keys from a field the user is typing in.
+// Shortcuts must never steal keys from a field the user is typing in. That
+// includes editors built on EditContext (Monaco in Chromium), whose input is
+// a plain element rather than a textarea.
 function isTyping(target: EventTarget | null) {
   return (
     target instanceof HTMLElement &&
-    (target.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName))
+    (target.isContentEditable ||
+      ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName) ||
+      Boolean((target as { editContext?: unknown }).editContext))
   );
 }
 

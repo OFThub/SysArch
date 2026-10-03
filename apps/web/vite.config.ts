@@ -4,6 +4,9 @@ import { defineConfig } from 'vite';
 
 export default defineConfig({
   plugins: [react(), tailwindcss()],
+  // Monaco is plain ESM and loads lazily. Pre-bundled, the dev server would
+  // either stall startup on it or re-bundle mid-page when the code tab opens.
+  optimizeDeps: { exclude: ['monaco-editor'] },
   server: {
     port: 5173,
     // SYSARCH_API lets the e2e run point the proxy at its own server.
