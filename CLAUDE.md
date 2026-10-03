@@ -60,6 +60,7 @@ Work as a senior engineer fluent in full stack TypeScript, embedded systems
 | `packages/shared/src/schema.ts`  | `ArchDoc` zod schema and referential integrity           |
 | `packages/shared/src/migrate.ts` | Doc version upgrades, run on every read                  |
 | `packages/shared/src/edit.ts`    | Pure doc edits: connect, remove cascade, copy/paste      |
+| `packages/shared/src/flows.ts`   | Flow tracing (latency, broken step), links to a path     |
 | `packages/shared/src/catalog/`   | Types, presets, protocols, pin maps, effective catalog   |
 | `packages/shared/src/validate/`  | Rule engine; one file per rule family in `rules/`        |
 | `packages/shared/src/simulate/`  | Load, capacity, power, latency; their rules              |
@@ -76,7 +77,8 @@ Work as a senior engineer fluent in full stack TypeScript, embedded systems
 | `apps/web/src/canvas/`           | React Flow view model, nodes, edges, elk layout          |
 | `apps/web/src/panels/`           | Palette and schema-driven inspector                      |
 | `apps/web/src/shell/`            | Editor frame, tabs, shortcuts, export menu               |
-| `apps/web/src/analysis/`         | Issues and simulation panel                              |
+| `apps/web/src/analysis/`         | Issues, simulation and flows panel; flow playback        |
+| `apps/web/src/code/`             | YAML code tab (Monaco): doc ↔ text with line errors      |
 | `apps/web/src/sync/`             | Debounced autosave and conflict handling                 |
 | `e2e/`                           | Playwright specs and session setup                       |
 
