@@ -40,7 +40,11 @@ export function issueIndex(issues: Issue[]) {
  * Where to show an issue: the current view if it contains every node
  * involved, otherwise the overview, which shows every top-level node.
  */
-export function viewForIssue(doc: ArchDoc, activeViewId: string, issue: Issue): string {
+export function viewForIssue(
+  doc: ArchDoc,
+  activeViewId: string,
+  issue: Pick<Issue, 'nodeIds'>,
+): string {
   const shown = new Set(buildFlow(doc, activeViewId).nodes.map((n) => n.id));
   return issue.nodeIds.every((id) => shown.has(id)) ? activeViewId : 'overview';
 }

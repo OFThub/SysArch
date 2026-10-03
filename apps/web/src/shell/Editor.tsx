@@ -1,9 +1,10 @@
 import { ChevronLeft, Redo2, Undo2 } from 'lucide-react';
-import { useCallback, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useState, type ReactNode } from 'react';
 import { AnalysisPanel } from '../analysis/AnalysisPanel';
 import { Canvas } from '../canvas/Canvas';
 import { tr } from '../i18n/tr';
 import { Palette } from '../panels/Palette';
+import { Breadcrumb } from './Breadcrumb';
 import { ExportMenu } from './ExportMenu';
 import { SidePanel } from './SidePanel';
 import { ThemeSwitch } from './ThemeSwitch';
@@ -32,6 +33,13 @@ export function Editor({ saveStatus, banner }: { saveStatus: ReactNode; banner?:
     else setPending({ nodeIds, edgeIds, edgeCount: edges.size });
   }, []);
   useShortcuts(requestDelete);
+
+  // The open view can disappear (an undo before its drill view existed, its
+  // root deleted, a newer copy loaded); fall back to the overview.
+  const viewMissing = useEditor((s) => !s.doc.views.some((v) => v.id === s.activeViewId));
+  useEffect(() => {
+    if (viewMissing) useEditor.getState().setActiveView('overview');
+  }, [viewMissing]);
 
   return (
     <div className="flex h-full flex-col">
@@ -77,6 +85,7 @@ export function Editor({ saveStatus, banner }: { saveStatus: ReactNode; banner?:
       <div className="flex min-h-0 flex-1">
         <Palette />
         <main className="flex min-w-0 flex-1 flex-col">
+          <Breadcrumb />
           <div className="min-h-0 flex-1">
             <Canvas />
           </div>

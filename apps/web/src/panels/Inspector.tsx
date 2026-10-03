@@ -82,6 +82,8 @@ function ProjectInspector() {
 function NodeInspector({ node }: { node: ArchNode }) {
   const catalog = useCatalog();
   const update = useEditor((s) => s.updateNode);
+  const drillInto = useEditor((s) => s.drillInto);
+  const children = useEditor((s) => s.doc.nodes.filter((n) => n.parent === node.id).length);
   const type = catalog.get(node.type);
   const pins = pinsOf(node, catalog);
 
@@ -99,6 +101,14 @@ function NodeInspector({ node }: { node: ArchNode }) {
         />
         <span className="text-xs text-ink-muted">{tr.domain[node.domain]}</span>
       </header>
+
+      <button
+        onClick={() => drillInto(node.id)}
+        className="h-7 justify-self-start rounded-chip border border-line bg-raised px-2.5 text-sm hover:border-ink-muted"
+      >
+        {tr.drill.open}
+        {children > 0 && <span className="text-ink-muted"> ({children})</span>}
+      </button>
 
       <Field label={tr.inspector.label}>
         <TextInput

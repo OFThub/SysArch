@@ -1,9 +1,12 @@
-import { EdgeLabelRenderer, getSmoothStepPath, type EdgeProps } from '@xyflow/react';
+import { EdgeLabelRenderer, getSmoothStepPath, useStore, type EdgeProps } from '@xyflow/react';
 import { useState } from 'react';
+import { STEP_MS } from '../analysis/playback';
 import { SeverityIcon } from '../ui/SeverityIcon';
 import type { ArchFlowEdge } from './viewModel';
 
 const LANE_GAP = 8;
+const REDUCED_MOTION =
+  typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 const DIFF_COLOR = {
   added: 'var(--diff-add)',
   removed: 'var(--danger)',
@@ -59,9 +62,14 @@ export function WireEdge({
             fill="none"
             stroke={color}
             strokeOpacity={opacity}
-            strokeWidth={selected ? 2 : 1.5}
+            strokeWidth={data.pulse ? 2.5 : selected ? 2 : 1.5}
             strokeDasharray={data.wireless ? '6 4' : undefined}
           />
+        )}
+        {/* A playing flow: a dot travels the link the way the flow goes. With
+            reduced motion the thicker line alone marks the step. */}
+        {data.pulse && !REDUCED_MOTION && (
+          <Pulse path={path} color={color} back={data.pulse === 'back'} />
         )}
         {/* Wide invisible stroke so thin wires are easy to hover and click. */}
         <path d={path} fill="none" stroke="transparent" strokeWidth={16} />
@@ -85,5 +93,25 @@ export function WireEdge({
         </EdgeLabelRenderer>
       )}
     </>
+  );
+}
+
+/**
+ * The dot of a playing flow. Sized against the zoom so it stays visible on a
+ * zoomed-out overview; only the one pulsing link subscribes to the zoom.
+ */
+function Pulse({ path, color, back }: { path: string; color: string; back: boolean }) {
+  const zoom = useStore((s) => s.transform[2]);
+  return (
+    <circle r={5 / Math.min(zoom, 1)} fill={color}>
+      <animateMotion
+        dur={`${STEP_MS}ms`}
+        path={path}
+        fill="freeze"
+        calcMode="linear"
+        keyPoints={back ? '1;0' : '0;1'}
+        keyTimes="0;1"
+      />
+    </circle>
   );
 }

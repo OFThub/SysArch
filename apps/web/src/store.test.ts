@@ -1,4 +1,4 @@
-import { seraIot } from '@sysarch/shared';
+import { removeElements, seraIot } from '@sysarch/shared';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { undo, useEditor } from './store';
 
@@ -92,5 +92,89 @@ describe('editor store', () => {
     s().setSelection({ nodeIds: ['api'], edgeIds: [] });
     s().setActiveView('ai');
     expect(s().selection).toEqual({ nodeIds: [], edgeIds: [] });
+  });
+});
+
+describe('drill-down', () => {
+  const cache = {
+    id: 'cache',
+    domain: 'fullstack' as const,
+    type: 'cache',
+    label: 'Redis',
+    props: {},
+  };
+
+  it('opens a node in its own view without an undo step, and reuses that view', () => {
+    s().drillInto('api');
+    const view = s().doc.views.find((v) => v.id === s().activeViewId)!;
+    expect(view).toMatchObject({ kind: 'drill', rootNodeId: 'api' });
+    expect(history().pastStates).toHaveLength(0);
+
+    s().setActiveView('overview');
+    s().drillInto('api');
+    expect(s().activeViewId).toBe(view.id);
+    expect(s().doc.views.filter((v) => v.kind === 'drill')).toHaveLength(1);
+  });
+
+  it('puts components added or pasted inside the open component', () => {
+    s().drillInto('api');
+    s().addNode(cache, s().activeViewId, { x: 0, y: 0 });
+    expect(s().doc.nodes.find((n) => n.id === 'cache')!.parent).toBe('api');
+
+    // Outside a drill view nothing is adopted.
+    s().setActiveView('fullstack');
+    s().addNode({ ...cache, id: 'cache2' }, 'fullstack', { x: 0, y: 0 });
+    expect(s().doc.nodes.find((n) => n.id === 'cache2')!.parent).toBeUndefined();
+
+    s().drillInto('api');
+    s().paste(
+      {
+        kind: 'sysarch/clip',
+        nodes: [{ ...cache, id: 'c3' }],
+        edges: [],
+        positions: {},
+        customTypes: [],
+      },
+      { x: 10, y: 10 },
+    );
+    const pasted = s().doc.nodes.find(
+      (n) => n.label === 'Redis' && !['cache', 'cache2'].includes(n.id),
+    )!;
+    expect(pasted.parent).toBe('api');
+  });
+});
+
+describe('flows', () => {
+  it('adds, renames as one undo step, and removes a flow', () => {
+    const flow = { id: 'f', name: 'A', steps: ['e-publish'] };
+    s().setFlow(flow);
+    s().setFlow({ ...flow, name: 'Ak' });
+    s().setFlow({ ...flow, name: 'Akış' });
+    expect(s().doc.flows).toEqual([{ ...flow, name: 'Akış' }]);
+    // Typing the name is coalesced with creating it.
+    expect(history().pastStates).toHaveLength(1);
+    s().removeFlow('f');
+    expect(s().doc.flows).toEqual([]);
+    undo();
+    expect(s().doc.flows.map((f) => f.name)).toEqual(['Akış']);
+  });
+});
+
+describe('code editor', () => {
+  it('applies typed code as one undo step and drops a removed node from the selection', () => {
+    const before = s().doc;
+    s().setSelection({ nodeIds: ['api', 'dashboard'], edgeIds: [] });
+    const rename = (label: string) => ({
+      ...s().doc,
+      nodes: s().doc.nodes.map((n) => (n.id === 'api' ? { ...n, label } : n)),
+    });
+    s().applyCode(rename('Sera'));
+    s().applyCode(rename('Sera servisi'));
+    s().applyCode(removeElements(s().doc, ['dashboard'], []));
+
+    expect(s().selection.nodeIds).toEqual(['api']);
+    expect(history().pastStates).toHaveLength(1);
+    undo();
+    expect(s().doc).toEqual(before);
   });
 });

@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-10-03
+
+### Added
+
+- Drill-down: double-click a component, or use "İç yapısını aç", to
+  design its inside in a view of its own. Parts added there belong to it,
+  a breadcrumb leads back out, and the component shows how many parts it
+  holds.
+- Flows in the "Akışlar" tab: select the links a request or a reading
+  travels, turn them into a named flow, give it an end-to-end target in
+  ms, and play it step by step on the canvas. A flow over its target or
+  broken by a removed link is listed under issues, and `ARCHITECTURE.md`
+  draws each flow as a sequence diagram.
+- "Kod" tab: the design as YAML, without its layout. Valid edits reach the
+  canvas as you type, one undo step per burst of typing; mistakes are
+  marked on their line. A change made elsewhere replaces the text, or
+  offers to reload it while you are typing.
+
 ## [0.2.0] - 2026-10-02
 
 ### Added
@@ -64,6 +82,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Continuous integration for formatting, types, lint, unit and end-to-end
   tests.
 
-[unreleased]: https://github.com/OFThub/SysArch/compare/v0.2.0...HEAD
+[unreleased]: https://github.com/OFThub/SysArch/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/OFThub/SysArch/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/OFThub/SysArch/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/OFThub/SysArch/releases/tag/v0.1.0

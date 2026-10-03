@@ -1,5 +1,6 @@
 import {
   effectiveCatalog,
+  newId,
   pasteSubgraph,
   removeElements,
   createEmptyDoc,
@@ -8,6 +9,7 @@ import {
   type ArchNode,
   type Catalog,
   type Clip,
+  type Flow,
 } from '@sysarch/shared';
 import { useMemo } from 'react';
 import { temporal } from 'zundo';
@@ -54,6 +56,26 @@ export interface EditorState {
    * over it in one go, like any local edit.
    */
   applyRemote: (doc: ArchDoc, revision: number) => void;
+  /** Opens a node's inside: its drill view, created on first visit. */
+  drillInto: (nodeId: string) => void;
+  /** Adds or replaces a flow; typing its name or target is one undo step. */
+  setFlow: (flow: Flow) => void;
+  removeFlow: (id: string) => void;
+  /** A doc written in the code editor; a burst of typing is one undo step. */
+  applyCode: (doc: ArchDoc) => void;
+}
+
+/** Nodes added while a drill view is open live inside its root. */
+function adopt(doc: ArchDoc, nodeIds: string[], viewId: string): ArchDoc {
+  const root = doc.views.find((v) => v.id === viewId && v.kind === 'drill')?.rootNodeId;
+  if (!root) return doc;
+  const ids = new Set(nodeIds);
+  return {
+    ...doc,
+    nodes: doc.nodes.map((n) =>
+      ids.has(n.id) && n.parent === undefined ? { ...n, parent: root } : n,
+    ),
+  };
 }
 
 const mapById = <T extends { id: string }>(items: T[], id: string, fn: (item: T) => T) =>
@@ -73,7 +95,7 @@ const tagEdit = (key: string) => {
 
 export const useEditor = create<EditorState>()(
   temporal(
-    (set) => ({
+    (set, get) => ({
       doc: createEmptyDoc('Proje'),
       project: null,
       activeViewId: 'overview',
@@ -109,14 +131,18 @@ export const useEditor = create<EditorState>()(
 
       addNode: (node, viewId, position) =>
         set((s) => ({
-          doc: {
-            ...s.doc,
-            nodes: [...s.doc.nodes, node],
-            views: mapById(s.doc.views, viewId, (v) => ({
-              ...v,
-              positions: { ...v.positions, [node.id]: position },
-            })),
-          },
+          doc: adopt(
+            {
+              ...s.doc,
+              nodes: [...s.doc.nodes, node],
+              views: mapById(s.doc.views, viewId, (v) => ({
+                ...v,
+                positions: { ...v.positions, [node.id]: position },
+              })),
+            },
+            [node.id],
+            viewId,
+          ),
           selection: { nodeIds: [node.id], edgeIds: [] },
         })),
 
@@ -168,8 +194,55 @@ export const useEditor = create<EditorState>()(
       paste: (clip, offset) =>
         set((s) => {
           const r = pasteSubgraph(s.doc, clip, s.activeViewId, offset);
-          return { doc: r.doc, selection: { nodeIds: r.nodeIds, edgeIds: r.edgeIds } };
+          return {
+            doc: adopt(r.doc, r.nodeIds, s.activeViewId),
+            selection: { nodeIds: r.nodeIds, edgeIds: r.edgeIds },
+          };
         }),
+
+      setFlow: (flow) => {
+        tagEdit(`flow:${flow.id}`);
+        set((s) => {
+          const exists = s.doc.flows.some((f) => f.id === flow.id);
+          const flows = exists ? mapById(s.doc.flows, flow.id, () => flow) : [...s.doc.flows, flow];
+          return { doc: { ...s.doc, flows } };
+        });
+      },
+
+      removeFlow: (id) =>
+        set((s) => ({ doc: { ...s.doc, flows: s.doc.flows.filter((f) => f.id !== id) } })),
+
+      drillInto: (nodeId) => {
+        const none = { nodeIds: [], edgeIds: [] };
+        const existing = get().doc.views.find((v) => v.kind === 'drill' && v.rootNodeId === nodeId);
+        if (existing) return set({ activeViewId: existing.id, selection: none });
+        const view = { id: newId(), kind: 'drill' as const, rootNodeId: nodeId, positions: {} };
+        // Opening a component is navigation, not an edit: no undo step for the
+        // empty view it needs. (The editor falls back if an undo removes it.)
+        const history = useEditor.temporal.getState();
+        history.pause();
+        set((s) => ({
+          doc: { ...s.doc, views: [...s.doc.views, view] },
+          activeViewId: view.id,
+          selection: none,
+        }));
+        history.resume();
+      },
+
+      applyCode: (doc) => {
+        tagEdit('code');
+        set((s) => {
+          const nodes = new Set(doc.nodes.map((n) => n.id));
+          const edges = new Set(doc.edges.map((e) => e.id));
+          return {
+            doc,
+            selection: {
+              nodeIds: s.selection.nodeIds.filter((id) => nodes.has(id)),
+              edgeIds: s.selection.edgeIds.filter((id) => edges.has(id)),
+            },
+          };
+        });
+      },
 
       applyRemote: (doc, revision) =>
         set((s) => ({

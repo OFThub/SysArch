@@ -1,4 +1,5 @@
 import { Handle, Position, useUpdateNodeInternals, type NodeProps } from '@xyflow/react';
+import { Layers } from 'lucide-react';
 import { useEffect } from 'react';
 import { tr } from '../i18n/tr';
 import { NodeIcon } from '../icons/NodeIcon';
@@ -50,6 +51,12 @@ export function ArchNodeView({ id, data, selected }: NodeProps<ArchFlowNode>) {
             {node.label}
           </div>
           <div className="text-xs text-ink-muted">{type?.label ?? node.type}</div>
+          {data.children > 0 && (
+            <div title={tr.drill.hint} className="flex items-center gap-1 text-xs text-ink-muted">
+              <Layers size={12} strokeWidth={1.5} aria-hidden />
+              {tr.drill.children(data.children)}
+            </div>
+          )}
         </div>
         {diff && data.diff && (
           <span

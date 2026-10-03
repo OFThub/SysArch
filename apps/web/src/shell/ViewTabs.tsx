@@ -1,5 +1,6 @@
 import { DOMAINS } from '@sysarch/shared';
 import type { KeyboardEvent } from 'react';
+import { drillPath } from '../canvas/viewModel';
 import { tr } from '../i18n/tr';
 import { useEditor } from '../store';
 
@@ -10,7 +11,8 @@ const TABS = [
 
 /** Domain tabs carry their channel color as a dot and active underline. */
 export function ViewTabs() {
-  const active = useEditor((s) => s.activeViewId);
+  // Inside a component, the tab it was opened from stays marked.
+  const active = useEditor((s) => drillPath(s.doc, s.activeViewId)?.domain ?? s.activeViewId);
   const setActive = useEditor((s) => s.setActiveView);
 
   // Arrow keys move between tabs, per the WAI-ARIA tabs pattern.

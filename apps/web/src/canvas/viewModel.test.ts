@@ -1,6 +1,6 @@
 import { seraIot } from '@sysarch/shared';
 import { describe, expect, it } from 'vitest';
-import { archEdgeId, buildFlow } from './viewModel';
+import { archEdgeId, buildFlow, drillPath } from './viewModel';
 
 const doc = seraIot();
 
@@ -68,5 +68,33 @@ describe('buildFlow', () => {
     expect([publish.sourceHandle, publish.targetHandle]).toEqual(['out:MQTT', 'in:MQTT']);
     expect(publish.data).toMatchObject({ wireless: true, power: false, channel: 'hardware' });
     expect(edges.find((e) => e.id === 'p-esp/VCC')!.data!.power).toBe(true);
+  });
+});
+
+describe('drill views', () => {
+  const nested = () => {
+    const d = seraIot();
+    d.nodes.push(
+      { id: 'router', domain: 'fullstack', type: 'api', label: 'Router', props: {}, parent: 'api' },
+      { id: 'auth', domain: 'fullstack', type: 'api', label: 'Auth', props: {}, parent: 'router' },
+    );
+    d.views.push({ id: 'v-router', kind: 'drill', rootNodeId: 'router', positions: {} });
+    return d;
+  };
+
+  it('shows only the children of the root and counts what each contains', () => {
+    const d = nested();
+    expect(buildFlow(d, 'v-router').nodes.map((n) => n.id)).toEqual(['auth']);
+    const api = buildFlow(d, 'fullstack').nodes.find((n) => n.id === 'api')!;
+    expect(api.data.children).toBe(1);
+    // Children never show on the domain tabs.
+    expect(buildFlow(d, 'fullstack').nodes.some((n) => n.id === 'router')).toBe(false);
+  });
+
+  it('gives the path from the domain tab down to the open component', () => {
+    const path = drillPath(nested(), 'v-router')!;
+    expect(path.domain).toBe('fullstack');
+    expect(path.nodes.map((n) => n.label)).toEqual(['Sera API', 'Router']);
+    expect(drillPath(nested(), 'overview')).toBeNull();
   });
 });

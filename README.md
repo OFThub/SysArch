@@ -27,8 +27,18 @@ overview tab where cross-domain links are drawn.
 - **Simulation.** Link bandwidth versus payload rate, node capacity
   versus incoming requests, power budget and battery life per supply, and
   shortest-path latency between two components.
+- **Drill-down.** Double-click a component to design its inside in a view
+  of its own; a breadcrumb leads back out.
+- **Flows.** Turn the links a request or a reading travels into a named
+  flow, time it end to end against a target, and play it step by step on
+  the canvas. A flow over its target or broken by a removed link shows up
+  as an issue.
+- **Diagram as code.** The "Kod" tab holds the design as YAML, layout
+  aside. Edits apply to the canvas as you type; mistakes are marked on
+  their line.
 - **Exports.** JSON and YAML, PNG and SVG, an AI-readable
-  `ARCHITECTURE.md` with `architecture.json`, and a zip holding generated
+  `ARCHITECTURE.md` (with a sequence diagram per flow) and
+  `architecture.json`, and a zip holding generated
   `docker-compose.yml`, OpenAPI specs, `mosquitto.conf` with a topic
   list, and a `pins.h` per microcontroller.
 - **Editor.** Undo/redo, multi-select, copy/paste across tabs, automatic
