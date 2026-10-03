@@ -36,16 +36,15 @@ function applyTheme() {
   const muted = c('ink-muted').slice(1);
   monaco.editor.defineTheme('sysarch', {
     base: parseInt(raised.slice(1, 3), 16) < 128 ? 'vs-dark' : 'vs',
-    inherit: true,
-    // Base themes color `string.yaml` and friends; the suffixed form outranks a bare one.
+    // No inherited token rules: everything is ink unless listed. (Monaco also
+    // calls a quoted string continued on the next line invalid; it is valid
+    // YAML, and real errors come from our markers.) Unset colors still fall
+    // back to the base theme's defaults.
+    inherit: false,
     rules: [
       { token: '', foreground: ink },
-      ...['string', 'number', 'keyword', 'operators', 'delimiter', 'tag', 'meta'].map((t) => ({
-        token: `${t}.yaml`,
-        foreground: ink,
-      })),
-      { token: 'type.yaml', foreground: muted },
-      { token: 'comment.yaml', foreground: muted, fontStyle: 'italic' },
+      { token: 'type', foreground: muted },
+      { token: 'comment', foreground: muted, fontStyle: 'italic' },
     ],
     colors: {
       'editor.background': raised,
@@ -202,7 +201,10 @@ export default function CodePanel() {
       ) : (
         <p className="border-b border-line px-3 py-2 text-sm text-ink-muted">{tr.code.hint}</p>
       )}
-      <div ref={host} className="min-h-0 flex-1" />
+      {/* A gutter so line numbers don't sit on the panel's edge line. */}
+      <div className="min-h-0 flex-1 bg-raised pl-1.5">
+        <div ref={host} className="h-full" />
+      </div>
       {errors.length > 0 && (
         <div className="grid gap-1 border-t border-line px-3 py-2 text-sm">
           <p className="flex items-center gap-2 font-medium">

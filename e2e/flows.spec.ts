@@ -47,7 +47,7 @@ test('make a flow from selected links, time it against a target, play it', async
 
   await row.getByLabel('Akış adı').fill('Telemetri');
   // A target the flow cannot meet.
-  const target = row.getByPlaceholder('ms');
+  const target = row.getByLabel('Hedef');
   await target.fill('1');
   await target.press('Enter');
   await expect(row).toContainText('Hedefi aşıyor');

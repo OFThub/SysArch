@@ -85,15 +85,15 @@ function FlowRow({ flow }: { flow: Flow }) {
       <span className="text-sm text-ink-muted tabular-nums">
         {tr.flows.steps(flow.steps.length)}
       </span>
-      <span className="text-sm tabular-nums">
-        {tr.flows.total} {fmt.format(trace.totalMs)} ms
+      <span className="text-sm text-ink-muted">
+        {tr.flows.total}{' '}
+        <span className="text-ink tabular-nums">{fmt.format(trace.totalMs)} ms</span>
       </span>
       <label className="flex items-center gap-1.5 text-sm text-ink-muted">
         {tr.flows.sla}
         <span className="w-20">
           <NumberInput
             value={flow.slaMs}
-            placeholder="ms"
             onCommit={(v) => {
               const { slaMs: _, ...rest } = flow;
               setFlow(v === undefined || v <= 0 ? rest : { ...rest, slaMs: v });
