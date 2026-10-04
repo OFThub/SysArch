@@ -1,4 +1,4 @@
-import { seraIot } from '@sysarch/shared';
+import { DOMAINS, TEMPLATES, type ArchDoc } from '@sysarch/shared';
 import { useEffect, useState } from 'react';
 import { api, authClient } from '../api/client';
 import { tr } from '../i18n/tr';
@@ -8,6 +8,12 @@ import { ConfirmDialog } from '../ui/ConfirmDialog';
 import { ApiKeys } from './ApiKeys';
 
 type Row = { id: string; name: string; updatedAt: string };
+
+/** Each starter design, built once, with the domains it spans. */
+const templates = TEMPLATES.map(({ id, build }) => {
+  const doc = build();
+  return { id, doc, domains: DOMAINS.filter((d) => doc.nodes.some((n) => n.domain === d)) };
+});
 
 const relative = new Intl.RelativeTimeFormat('tr', { numeric: 'auto' });
 function ago(iso: string) {
@@ -37,13 +43,11 @@ export function ProjectList({ userName }: { userName: string }) {
     };
   }, [version]);
 
-  const create = async (template: boolean) => {
+  const create = async (doc?: ArchDoc) => {
     setBusy(true);
     try {
       const res = await api.projects.$post({
-        json: template
-          ? { name: tr.projects.templateName, doc: seraIot() }
-          : { name: tr.projects.untitled },
+        json: doc ? { name: doc.meta.name, doc } : { name: tr.projects.untitled },
       });
       if (res.ok) navigate(`/p/${(await res.json()).id}`);
       else setRows('failed');
@@ -79,19 +83,45 @@ export function ProjectList({ userName }: { userName: string }) {
           <h1 className="mr-auto font-wide text-xl font-semibold">{tr.projects.title}</h1>
           <button
             disabled={busy}
-            onClick={() => void create(true)}
-            className="h-8 rounded-chip border border-line bg-raised px-3 text-sm hover:border-ink-muted disabled:opacity-50"
-          >
-            {tr.projects.newTemplate}
-          </button>
-          <button
-            disabled={busy}
-            onClick={() => void create(false)}
+            onClick={() => void create()}
             className="h-8 rounded-chip bg-ink px-3 text-sm font-medium text-raised disabled:opacity-50"
           >
             {tr.projects.newEmpty}
           </button>
         </div>
+
+        <section className="mt-8">
+          <h2 className="font-wide text-md font-semibold">{tr.projects.templatesTitle}</h2>
+          <ul className="mt-3 border-b border-line">
+            {templates.map(({ id, doc, domains }) => (
+              <li key={id} className="border-t border-line">
+                <button
+                  disabled={busy}
+                  onClick={() => void create(doc)}
+                  aria-label={tr.projects.fromTemplate(doc.meta.name)}
+                  className="flex w-full items-baseline gap-4 py-2.5 text-left hover:bg-panel disabled:opacity-50"
+                >
+                  <span className="w-56 shrink-0 font-medium">{doc.meta.name}</span>
+                  <span className="flex-1 text-sm text-ink-muted">{tr.projects.templates[id]}</span>
+                  {/* The domains it spans, in the channel colors of the tabs. */}
+                  <span
+                    className="flex shrink-0 gap-1.5"
+                    title={domains.map((d) => tr.domain[d]).join(', ')}
+                  >
+                    {domains.map((d) => (
+                      <span
+                        key={d}
+                        aria-hidden
+                        className="size-2 rounded-full"
+                        style={{ background: `var(--ch-${d})` }}
+                      />
+                    ))}
+                  </span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        </section>
 
         {rows === 'failed' && <p className="mt-8">{tr.projects.loadFailed}</p>}
         {Array.isArray(rows) && rows.length === 0 && (

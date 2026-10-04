@@ -1,19 +1,5 @@
-import { defaultProps, effectiveCatalog, nodeFromPreset, PRESETS } from '../catalog';
-import { ArchDocSchema, createEmptyDoc, type ArchDoc, type ArchNode, type Props } from '../schema';
-
-const catalog = effectiveCatalog();
-
-function part(id: string, presetId: string): ArchNode {
-  const preset = PRESETS.find((p) => p.id === presetId);
-  if (!preset) throw new Error(`unknown preset ${presetId}`);
-  return nodeFromPreset(preset, catalog, id);
-}
-
-function node(id: string, type: string, label: string, props: Props = {}): ArchNode {
-  const t = catalog.get(type);
-  if (!t) throw new Error(`unknown type ${type}`);
-  return { id, domain: t.domain, type, label, props: { ...defaultProps(t), ...props } };
-}
+import { ArchDocSchema, createEmptyDoc, type ArchDoc } from '../schema';
+import { node, part } from './parts';
 
 const telemetry = {
   schemaName: 'Telemetry',

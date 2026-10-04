@@ -347,7 +347,8 @@ export const BUILTIN_TYPES: CatalogType[] = [
       current(1),
       price,
     ],
-    protocols: ['I2C', 'SPI', 'UART', 'GPIO', 'Power'],
+    // USB: cameras, GPS and other modules that plug in rather than wire up.
+    protocols: ['I2C', 'SPI', 'UART', 'GPIO', 'USB', 'Power'],
     exportHints: { pricingKey: 'bom', strideCategory: 'external' },
   },
   {
