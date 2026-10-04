@@ -1,5 +1,5 @@
 import type { ApiType, Proposal } from '@sysarch/server/api';
-import { newId, type ArchDoc, type OpError } from '@sysarch/shared';
+import { newId, type ArchDoc, type Op, type OpError } from '@sysarch/shared';
 import { apiKeyClient } from '@better-auth/api-key/client';
 import { createAuthClient } from 'better-auth/react';
 import { hc } from 'hono/client';
@@ -36,6 +36,18 @@ export async function listProposals(projectId: string): Promise<Proposal[]> {
   const res = await api.projects[':id'].proposals.$get({ param: { id: projectId } });
   if (!res.ok) throw new Error(`http ${res.status}`);
   return (await res.json()).proposals as Proposal[];
+}
+
+/** Files ops for review in the proposals tab; the new proposal's id, or the server's reason. */
+export async function createProposal(
+  projectId: string,
+  json: { summary: string; ops: Op[]; source: 'import' },
+): Promise<{ ok: true; id: string } | { ok: false; error: string }> {
+  const res = await api.projects[':id'].proposals.$post({ param: { id: projectId }, json });
+  const body = (await res.json().catch(() => ({}))) as { proposal?: Proposal; error?: string };
+  return res.ok && body.proposal
+    ? { ok: true, id: body.proposal.id }
+    : { ok: false, error: body.error ?? `http ${res.status}` };
 }
 
 export type ApplyResult =

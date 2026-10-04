@@ -121,6 +121,31 @@ export const tr = {
     stop: 'Durdur',
     remove: 'Sil',
   },
+  import: {
+    open: 'İçe aktar',
+    body: 'docker-compose, Mermaid flowchart ya da Wokwi diagram.json. Eklenenler öneri olarak gelir; sen onaylamadan tasarım değişmez.',
+    file: 'Dosya seç',
+    text: 'İçe aktarılacak metin',
+    placeholder: 'Dosya seç ya da metni buraya yapıştır.',
+    format: { compose: 'docker-compose', mermaid: 'Mermaid flowchart', wokwi: 'Wokwi diyagramı' },
+    found: (format: string, nodes: number, edges: number) =>
+      `${format}: ${nodes} bileşen, ${edges} bağlantı`,
+    guessed: (subject: string) => `${subject}: türü adından tahmin edildi`,
+    skipped: (subject: string) => `${subject}: alınmadı`,
+    more: (n: number) => `ve ${n} not daha`,
+    error: {
+      syntax: 'Metin okunamadı: sözdizimi hatalı.',
+      empty: 'İçe aktarılacak bir bileşen bulunamadı.',
+      format:
+        'Bu biçim tanınmadı. docker-compose, Mermaid flowchart ya da Wokwi diagram.json kullan.',
+    },
+    tooBig: "Dosya 1 MB'tan büyük. Daha küçük bir parçasını yapıştır.",
+    submit: 'Öneri olarak ekle',
+    failed: 'Öneri eklenemedi. Tekrar dene.',
+    cancel: 'Vazgeç',
+    summary: (format: string, nodes: number, edges: number) =>
+      `${format} içe aktarıldı: ${nodes} bileşen, ${edges} bağlantı.`,
+  },
   code: {
     tab: 'Kod',
     editor: 'Mimari kodu (YAML)',

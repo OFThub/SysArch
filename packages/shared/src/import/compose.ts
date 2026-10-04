@@ -53,8 +53,9 @@ export function fromCompose(text: string, catalog: Catalog): Imported {
     throw new ImportError('syntax', (e as Error).message);
   }
   const services = (src as { services?: unknown } | null)?.services;
+  // No services map: some other YAML, not a compose file.
   if (typeof services !== 'object' || services === null || Array.isArray(services))
-    throw new ImportError('empty');
+    throw new ImportError('format');
   const entries = Object.entries(services as Record<string, unknown>);
   if (!entries.length) throw new ImportError('empty');
 

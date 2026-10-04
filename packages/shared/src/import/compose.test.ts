@@ -79,6 +79,9 @@ describe('docker-compose import', () => {
   it('rejects text that is not a compose file', () => {
     expect(() => fromCompose('services: [', catalog)).toThrow(ImportError);
     expect(() => fromCompose('name: x\n', catalog)).toThrow(
+      expect.objectContaining({ code: 'format' }),
+    );
+    expect(() => fromCompose('services: {}\n', catalog)).toThrow(
       expect.objectContaining({ code: 'empty' }),
     );
   });
