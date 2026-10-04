@@ -243,6 +243,7 @@ export function nodeFromPreset(preset: Preset, catalog: Catalog, id: string): Ar
     id,
     domain: type.domain,
     type: type.type,
+    preset: preset.id,
     label: preset.label,
     props: { ...defaultProps(type), ...preset.props },
     ...(preset.pins && { pins: preset.pins.map((p) => ({ ...p, functions: [...p.functions] })) }),

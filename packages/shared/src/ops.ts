@@ -27,6 +27,7 @@ type PropsPatch = z.infer<typeof PropsPatch>;
 const NodePatchSchema = z
   .object({
     type: NodeSchema.shape.type,
+    preset: NodeSchema.shape.preset.unwrap().nullable(),
     domain: DomainSchema,
     label: NodeSchema.shape.label,
     parent: Id.nullable(),
@@ -183,7 +184,16 @@ function mergeProps(props: Props, patch: PropsPatch): Props {
   return out;
 }
 
-const NODE_FIELDS = ['type', 'domain', 'label', 'parent', 'pins', 'deploy', 'notes'] as const;
+const NODE_FIELDS = [
+  'type',
+  'preset',
+  'domain',
+  'label',
+  'parent',
+  'pins',
+  'deploy',
+  'notes',
+] as const;
 const EDGE_FIELDS = ['source', 'target', 'protocol', 'pins', 'payload'] as const;
 
 /**

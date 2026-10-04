@@ -95,6 +95,8 @@ export const NodeSchema = z.object({
   id: Id,
   domain: DomainSchema,
   type: z.string().min(1),
+  /** The preset a part was built from (a PRESETS id), for exports that need the real part. */
+  preset: z.string().min(1).max(64).optional(),
   label: z.string().min(1).max(120),
   parent: Id.optional(),
   props: Props.default({}),
