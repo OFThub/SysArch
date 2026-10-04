@@ -1,6 +1,6 @@
 import { defaultProps, type Catalog } from '../catalog';
 import type { Op } from '../ops';
-import type { ArchDoc, ArchEdge, ArchNode, Props } from '../schema';
+import type { ArchDoc, ArchEdge, ArchNode, Props, Protocol } from '../schema';
 
 type Point = { x: number; y: number };
 
@@ -43,9 +43,25 @@ export function catalogNode(
   return { id, domain: t.domain, type, label, props: { ...defaultProps(t), ...props } };
 }
 
-/** A source name made into a valid id: [A-Za-z0-9_-], at most 64 chars. */
+/** How a component talks to the one it calls, when the source does not say. */
+export function protocolTo(target: ArchNode): Protocol {
+  if (target.type === 'database') return 'SQL';
+  if (target.type === 'cache') return 'TCP';
+  if (target.type === 'queue')
+    return target.props.engine === 'Mosquitto'
+      ? 'MQTT'
+      : target.props.engine === 'RabbitMQ'
+        ? 'AMQP'
+        : 'TCP';
+  return 'HTTP';
+}
+
+/** A source name made into a valid id: [A-Za-z0-9_-], at most 64 chars ("Ölçüm" → "Olcum"). */
 export const safeId = (raw: string) =>
   raw
+    .replaceAll('ı', 'i')
+    .normalize('NFKD')
+    .replace(/[̀-ͯ]/g, '')
     .replace(/[^A-Za-z0-9_-]+/g, '-')
     .replace(/^-+|-+$/g, '')
     .slice(0, 64) || 'n';

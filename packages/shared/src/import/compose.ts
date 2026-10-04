@@ -1,7 +1,7 @@
 import { parse } from 'yaml';
 import type { Catalog } from '../catalog';
-import type { ArchEdge, ArchNode, Props, Protocol } from '../schema';
-import { catalogNode, ImportError, type Imported, type ImportNote } from './common';
+import type { ArchEdge, ArchNode, Props } from '../schema';
+import { catalogNode, ImportError, protocolTo, type Imported, type ImportNote } from './common';
 
 /** Well-known images, matched against the whole image reference in order. */
 const IMAGES: [RegExp, string, Props?][] = [
@@ -25,15 +25,6 @@ const IMAGES: [RegExp, string, Props?][] = [
 ];
 /** A service built from source is the team's own code; its name says which side. */
 const FRONTEND_NAME = /web|front|ui|client|site/i;
-
-/** How a service talks to what it depends on. */
-function protocolTo(n: ArchNode): Protocol {
-  if (n.type === 'database') return 'SQL';
-  if (n.type === 'cache') return 'TCP';
-  if (n.type === 'queue')
-    return n.props.engine === 'Mosquitto' ? 'MQTT' : n.props.engine === 'RabbitMQ' ? 'AMQP' : 'TCP';
-  return 'HTTP';
-}
 
 /** The container side of the first published port: "8080:3000" → 3000. */
 function containerPort(ports: unknown): number | undefined {
