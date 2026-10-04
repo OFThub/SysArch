@@ -3,6 +3,7 @@ import type { Catalog } from '../catalog';
 import type { ArchDoc, ArchEdge, ArchNode, Payload } from '../schema';
 import { i2cBuses, normalizeI2cAddress } from '../validate';
 import type { ExportFile } from './architecture';
+import { bomFiles, wokwiFiles } from './hardware';
 
 /*
  * Starting points, not finished code: each generator writes what the design
@@ -343,4 +344,6 @@ export const generateCode = (doc: ArchDoc, catalog: Catalog): ExportFile[] => [
   ...openApiFiles(doc),
   ...mqttFiles(doc),
   ...pinsFiles(doc),
+  ...wokwiFiles(doc, catalog),
+  ...bomFiles(doc, catalog),
 ];

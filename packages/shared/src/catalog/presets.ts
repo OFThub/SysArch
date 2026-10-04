@@ -19,6 +19,12 @@ export interface Preset {
   label: string;
   props: Props;
   pins?: PinDef[];
+  /**
+   * The matching Wokwi part: its type, the pin names that differ from ours,
+   * and the TX/RX pins that feed Wokwi's serial monitor. Pin names come from
+   * Wokwi's part docs and board files; `wokwi-cli lint` checks a diagram.
+   */
+  wokwi?: { type: string; pins?: Record<string, string>; serial?: [tx: string, rx: string] };
 }
 
 const pin = (name: string, voltage: number, ...functions: string[]): PinDef => ({
@@ -79,6 +85,20 @@ export const PRESETS: Preset[] = [
       vcc('5V', 5),
       gnd,
     ],
+    // Wokwi numbers GPIOs bare ("8") and names UART0 (GPIO43/44) TX/RX.
+    wokwi: {
+      type: 'board-esp32-s3-devkitc-1',
+      pins: {
+        ...Object.fromEntries(
+          [4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 15, 16, 17, 18].map((n) => [`GPIO${n}`, `${n}`]),
+        ),
+        GPIO43: 'TX',
+        GPIO44: 'RX',
+        '3V3': '3V3.1',
+        GND: 'GND.1',
+      },
+      serial: ['TX', 'RX'],
+    },
   },
   {
     id: 'rpi-5',
@@ -154,6 +174,7 @@ export const PRESETS: Preset[] = [
       pin('SCL', 3.3, 'I2C_SCL'),
       pin('INT', 3.3, 'GPIO'),
     ],
+    wokwi: { type: 'wokwi-mpu6050' },
   },
   {
     id: 'hc-sr04',
@@ -162,6 +183,7 @@ export const PRESETS: Preset[] = [
     // 5 V part: ECHO drives 5 V into the MCU, the classic level-shift mistake.
     props: { measures: 'mesafe', sampleRateHz: 20, voltage: 5, currentMa: 15, priceUsd: 2 },
     pins: [vcc('VCC', 5), gnd, pin('TRIG', 5, 'GPIO'), pin('ECHO', 5, 'GPIO')],
+    wokwi: { type: 'wokwi-hc-sr04' },
   },
   {
     id: 'ssd1306',
@@ -169,6 +191,7 @@ export const PRESETS: Preset[] = [
     label: 'SSD1306 OLED',
     props: { kind: 'Ekran', i2cAddress: '0x3C', voltage: 3.3, currentMa: 20, priceUsd: 4 },
     pins: [vcc('VCC', 3.3), gnd, pin('SDA', 3.3, 'I2C_SDA'), pin('SCL', 3.3, 'I2C_SCL')],
+    wokwi: { type: 'board-ssd1306' },
   },
   {
     id: 'sg90',
@@ -177,6 +200,7 @@ export const PRESETS: Preset[] = [
     // Moving draw; stall reaches ~650 mA. Signal accepts 3.3 V logic.
     props: { kind: 'Servo', voltage: 5, currentMa: 200, priceUsd: 2 },
     pins: [vcc('VCC', 5), gnd, pin('SIG', 3.3, 'PWM')],
+    wokwi: { type: 'wokwi-servo', pins: { VCC: 'V+', SIG: 'PWM' } },
   },
   {
     id: 'li-ion-18650',
@@ -234,6 +258,13 @@ export const PRESETS: Preset[] = [
     ],
   },
 ];
+
+/** The preset a part came from; parts made before nodes recorded it match on type and label. */
+export function presetOf(n: ArchNode): Preset | undefined {
+  return n.preset !== undefined
+    ? PRESETS.find((p) => p.id === n.preset)
+    : PRESETS.find((p) => p.type === n.type && p.label === n.label);
+}
 
 /** Builds a node from a preset: type defaults, then the part's own values and pins. */
 export function nodeFromPreset(preset: Preset, catalog: Catalog, id: string): ArchNode {
