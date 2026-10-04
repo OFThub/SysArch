@@ -26,6 +26,6 @@ export function defaultProps(type: CatalogType): Props {
   return props;
 }
 
-export { PRESETS, nodeFromPreset, type Preset } from './presets';
+export { PRESETS, nodeFromPreset, presetOf, type Preset } from './presets';
 export { pinSupports, suggestPinMap } from './pins';
 export { chooseProtocol, connectNodes } from './connect';

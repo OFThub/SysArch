@@ -64,8 +64,9 @@ Work as a senior engineer fluent in full stack TypeScript, embedded systems
 | `packages/shared/src/catalog/`   | Types, presets, protocols, pin maps, effective catalog   |
 | `packages/shared/src/validate/`  | Rule engine; one file per rule family in `rules/`        |
 | `packages/shared/src/simulate/`  | Load, capacity, power, latency; their rules              |
-| `packages/shared/src/export/`    | `ARCHITECTURE.md`/json and code generators               |
-| `packages/shared/src/templates/` | Starter docs (Sera IoT), also test fixtures              |
+| `packages/shared/src/export/`    | `ARCHITECTURE.md`/json, code generators, Wokwi and BOM   |
+| `packages/shared/src/import/`    | compose, Mermaid, Wokwi → `Imported` → `importOps`       |
+| `packages/shared/src/templates/` | Starter docs (Sera IoT, edge AI, RAG, SaaS), fixtures    |
 | `apps/server/src/app.ts`         | Hono app; `ApiType` feeds the web RPC client             |
 | `apps/server/src/routes/`        | Project CRUD with revision compare-and-swap              |
 | `packages/shared/src/ops.ts`     | `Op` model, `applyOps`, `diffDocs`: every outside change |

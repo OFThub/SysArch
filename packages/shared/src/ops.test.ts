@@ -100,6 +100,8 @@ describe('diffDocs', () => {
     const api = b.nodes.find((n) => n.id === 'api')!;
     api.props = { ...api.props, port: 8080 };
     api.notes = 'Hono';
+    // A part that no longer is the preset it came from.
+    delete b.nodes.find((n) => n.id === 'oled')!.preset;
     const bme = b.edges.find((e) => e.id === 'e-bme')!;
     bme.pins = bme.pins!.slice(0, 1);
     b.edges.find((e) => e.id === 'e-store')!.protocol = 'TCP';

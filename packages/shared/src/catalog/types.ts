@@ -316,11 +316,8 @@ export const BUILTIN_TYPES: CatalogType[] = [
       num('clockMhz', 'Saat', 'MHz', 240),
     ],
     protocols: [...HW_BUS, 'USB', 'BLE', 'LoRa', 'MQTT', 'HTTP', 'WebSocket'],
-    exportHints: {
-      wokwiType: 'board-esp32-s3-devkitc-1',
-      pricingKey: 'bom',
-      strideCategory: 'process',
-    },
+    // No wokwiType: the board depends on the part, so presets name it.
+    exportHints: { pricingKey: 'bom', strideCategory: 'process' },
   },
   {
     type: 'sbc',
@@ -350,7 +347,8 @@ export const BUILTIN_TYPES: CatalogType[] = [
       current(1),
       price,
     ],
-    protocols: ['I2C', 'SPI', 'UART', 'GPIO', 'Power'],
+    // USB: cameras, GPS and other modules that plug in rather than wire up.
+    protocols: ['I2C', 'SPI', 'UART', 'GPIO', 'USB', 'Power'],
     exportHints: { pricingKey: 'bom', strideCategory: 'external' },
   },
   {

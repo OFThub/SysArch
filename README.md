@@ -40,7 +40,13 @@ overview tab where cross-domain links are drawn.
   `ARCHITECTURE.md` (with a sequence diagram per flow) and
   `architecture.json`, and a zip holding generated
   `docker-compose.yml`, OpenAPI specs, `mosquitto.conf` with a topic
-  list, and a `pins.h` per microcontroller.
+  list, a `pins.h` per microcontroller, a Wokwi `diagram.json` that
+  simulates the hardware tab, and a bill of materials (`bom.csv`).
+- **Import.** A docker-compose file, a Mermaid flowchart (bare or in a
+  README) or a Wokwi `diagram.json` comes in as a proposal: previewed on
+  the canvas, applied in full or in part.
+- **Templates.** Start from Sera IoT, an edge AI camera, a RAG app or a
+  SaaS app, each with its flows and targets.
 - **Editor.** Undo/redo, multi-select, copy/paste across tabs, automatic
   layout (elkjs), light and dark themes, autosave with conflict
   detection. The UI is in Turkish.

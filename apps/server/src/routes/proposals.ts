@@ -27,6 +27,9 @@ const OpsSchema = z.array(OpSchema).min(1).max(MAX_OPS);
 const CreateBody = z.object({
   summary: z.string().trim().min(1).max(2000),
   ops: OpsSchema,
+  // Where the ops came from, for the review list. "chat" is the server's
+  // own assistant and never claimed by a client.
+  source: z.enum(['mcp', 'import']).default('mcp'),
 });
 
 const ApplyBody = z.object({
@@ -36,7 +39,7 @@ const ApplyBody = z.object({
 
 export interface Proposal {
   id: string;
-  source: 'chat' | 'mcp';
+  source: 'chat' | 'mcp' | 'import';
   summary: string;
   ops: Op[];
   newIssues: Issue[];
@@ -112,8 +115,8 @@ export function proposalRoutes(db: Db, events: EventBus) {
         if (!project) return c.json({ error: 'not_found' }, 404);
         const doc = project.doc;
         if ('error' in doc) return c.json({ error: 'corrupt_doc' }, 500);
-        const { summary, ops } = c.req.valid('json');
-        const r = createProposal({ db, events }, { ...project.row, doc }, 'mcp', summary, ops);
+        const { summary, ops, source } = c.req.valid('json');
+        const r = createProposal({ db, events }, { ...project.row, doc }, source, summary, ops);
         if ('errors' in r) return c.json({ error: 'invalid_ops', errors: r.errors }, 422);
         return c.json({ proposal: r.proposal }, 201);
       },

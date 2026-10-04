@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-10-04
+
+### Added
+
+- Wokwi export: the code zip gains `wokwi/diagram.json`, the hardware tab
+  as a Wokwi simulation wired along the links' pin maps, with
+  `wokwi.toml` and a README naming the parts Wokwi lacks.
+- Bill of materials: `bom.csv` in the code zip, parts grouped with
+  quantities, unit prices and totals.
+- Import from docker-compose, Mermaid flowcharts (also inside a README)
+  and Wokwi diagrams under "İçe aktar". The format is recognized from the
+  content; what comes in arrives as a proposal to review and apply.
+- Starter templates: edge AI camera, RAG app and SaaS app next to Sera
+  IoT, each with flows and SLA targets, under "Şablonla başla".
+
+### Changed
+
+- The generic microcontroller type no longer claims an ESP32-S3 board for
+  Wokwi; the board comes from the part's preset.
+- Sensors can link over USB.
+
 ## [0.3.0] - 2026-10-03
 
 ### Added
@@ -82,7 +103,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Continuous integration for formatting, types, lint, unit and end-to-end
   tests.
 
-[unreleased]: https://github.com/OFThub/SysArch/compare/v0.3.0...HEAD
+[unreleased]: https://github.com/OFThub/SysArch/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/OFThub/SysArch/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/OFThub/SysArch/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/OFThub/SysArch/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/OFThub/SysArch/releases/tag/v0.1.0

@@ -32,7 +32,13 @@ describe('hardware presets', () => {
   it('nodeFromPreset merges type defaults with part values and copies pins', () => {
     const bme = PRESETS.find((p) => p.id === 'bme280')!;
     const node = nodeFromPreset(bme, catalog, 'n1');
-    expect(node).toMatchObject({ id: 'n1', domain: 'hardware', type: 'sensor', label: 'BME280' });
+    expect(node).toMatchObject({
+      id: 'n1',
+      domain: 'hardware',
+      type: 'sensor',
+      preset: 'bme280',
+      label: 'BME280',
+    });
     expect(node.props.i2cAddress).toBe('0x76');
     node.pins![0]!.functions.push('mutated');
     expect(bme.pins![0]!.functions).not.toContain('mutated');

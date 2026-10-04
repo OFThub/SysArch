@@ -42,7 +42,7 @@ export const proposals = sqliteTable(
     projectId: text('project_id')
       .notNull()
       .references(() => projects.id, { onDelete: 'cascade' }),
-    source: text('source', { enum: ['chat', 'mcp'] }).notNull(),
+    source: text('source', { enum: ['chat', 'mcp', 'import'] }).notNull(),
     summary: text('summary').notNull(),
     // Op[]; parsed with OpSchema on the way in and again before applying.
     ops: text('ops', { mode: 'json' }).$type<unknown>().notNull(),
