@@ -60,6 +60,19 @@ describe('proposals api', () => {
     expect((await read()).revision).toBe(1);
   });
 
+  it('labels an import as one, and lets no client pass for the assistant', async () => {
+    const { post, ada, base } = await setup();
+    const imported = await post(ada, base, {
+      summary: 'İçe aktar',
+      ops: [cacheNode],
+      source: 'import',
+    });
+    expect(imported.status).toBe(201);
+    expect((await json<{ proposal: Proposal }>(imported)).proposal.source).toBe('import');
+    const claimed = await post(ada, base, { summary: 'x', ops: [cacheNode], source: 'chat' });
+    expect(claimed.status).toBe(400);
+  });
+
   it('refuses ops that do not apply, with a reason per op, and stores nothing', async () => {
     const { propose, pending, post, ada, base } = await setup();
     const { res, body } = await propose([cacheEdge]);
