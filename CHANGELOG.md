@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Cost estimate in the "Maliyet" tab and in `ARCHITECTURE.md`: monthly
+  running cost per component (managed services by the month, GPUs by the
+  hour, LLMs by requests and tokens, storage by GB) and the hardware
+  total. List prices are dated and each can be overridden per project.
+- Trust boundaries in the "Tehditler" tab: zones built from the
+  selection, drawn as dashed frames on the canvas, with a trust level
+  each.
+- STRIDE rules: unencrypted links across zones, public APIs without
+  authentication, data stores reachable from the internet zone, personal
+  data sent straight to outside services. Links can be marked
+  "Şifreli (TLS)".
+- The SaaS template comes with trust zones.
+
 ## [0.4.0] - 2026-10-04
 
 ### Added

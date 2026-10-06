@@ -61,6 +61,7 @@ Work as a senior engineer fluent in full stack TypeScript, embedded systems
 | `packages/shared/src/migrate.ts` | Doc version upgrades, run on every read                  |
 | `packages/shared/src/edit.ts`    | Pure doc edits: connect, remove cascade, copy/paste      |
 | `packages/shared/src/flows.ts`   | Flow tracing (latency, broken step), links to a path     |
+| `packages/shared/src/pricing.ts` | Dated price table, overrides, `costReport`               |
 | `packages/shared/src/catalog/`   | Types, presets, protocols, pin maps, effective catalog   |
 | `packages/shared/src/validate/`  | Rule engine; one file per rule family in `rules/`        |
 | `packages/shared/src/simulate/`  | Load, capacity, power, latency; their rules              |
