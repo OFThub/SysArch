@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-10-06
+
 ### Added
 
 - Cost estimate in the "Maliyet" tab and in `ARCHITECTURE.md`: monthly
@@ -118,7 +120,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Continuous integration for formatting, types, lint, unit and end-to-end
   tests.
 
-[unreleased]: https://github.com/OFThub/SysArch/compare/v0.4.0...HEAD
+[unreleased]: https://github.com/OFThub/SysArch/compare/v0.5.0...HEAD
+[0.5.0]: https://github.com/OFThub/SysArch/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/OFThub/SysArch/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/OFThub/SysArch/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/OFThub/SysArch/compare/v0.1.0...v0.2.0
