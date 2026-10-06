@@ -68,6 +68,34 @@ export const tr = {
     fields: 'Alanlar',
     fieldsHint: 'Her satıra bir alan: ad: tür',
   },
+  cost: {
+    tab: 'Maliyet',
+    totals: (monthly: string, hardware?: string) =>
+      `Aylık yaklaşık ${monthly} işletme${hardware ? `, ${hardware} donanım` : ''}`,
+    note: (date: string) =>
+      `${date} liste fiyatlarıyla tahmin. Bölgeye, boyuta ve indirime göre değişir; fiyatları projene göre düzelt.`,
+    lines: 'Kalemler',
+    noLines: 'Fiyatlanacak bileşen yok.',
+    component: 'Bileşen',
+    amount: 'Tutar',
+    kind: 'Tür',
+    monthly: 'aylık',
+    oneOff: 'bir kez',
+    prices: 'Fiyatlar',
+    noPrices: 'Bu tasarımda düzeltilecek fiyat yok.',
+    key: 'Anahtar',
+    list: 'Liste fiyatı',
+    yours: 'Proje fiyatı',
+    yoursFor: (key: string) => `${key} için proje fiyatı`,
+    unit: (key: string) =>
+      key.startsWith('llm-')
+        ? '1M token'
+        : key.startsWith('gpu-hour')
+          ? 'saat'
+          : key === 'object-storage-gb'
+            ? 'GB, aylık'
+            : 'ay',
+  },
   analysis: {
     title: 'Analiz',
     issues: 'Sorunlar',

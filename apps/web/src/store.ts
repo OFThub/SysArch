@@ -63,6 +63,8 @@ export interface EditorState {
   removeFlow: (id: string) => void;
   /** A doc written in the code editor; a burst of typing is one undo step. */
   applyCode: (doc: ArchDoc) => void;
+  /** The project's own price for a price key; undefined goes back to the list price. */
+  setPriceOverride: (key: string, usd: number | undefined) => void;
 }
 
 /** Nodes added while a drill view is open live inside its root. */
@@ -240,6 +242,16 @@ export const useEditor = create<EditorState>()(
               nodeIds: s.selection.nodeIds.filter((id) => nodes.has(id)),
               edgeIds: s.selection.edgeIds.filter((id) => edges.has(id)),
             },
+          };
+        });
+      },
+
+      setPriceOverride: (key, usd) => {
+        tagEdit(`price:${key}`);
+        set((s) => {
+          const { [key]: _, ...rest } = s.doc.pricingOverrides;
+          return {
+            doc: { ...s.doc, pricingOverrides: usd === undefined ? rest : { ...rest, [key]: usd } },
           };
         });
       },

@@ -1,4 +1,6 @@
 import {
+  costReport,
+  PRICES,
   linkLoads,
   nodeLoads,
   pathLatency,
@@ -11,11 +13,14 @@ import { useMemo, useState, type ReactNode } from 'react';
 import { canvasApi } from '../canvas/canvasApi';
 import { tr } from '../i18n/tr';
 import { useCatalog, useEditor } from '../store';
+import { NumberInput } from '../ui/controls';
 import { SeverityIcon } from '../ui/SeverityIcon';
 import { FlowsView } from './FlowsView';
 import { issueText, useIssues, viewForIssue } from './issues';
 
-type Tab = 'issues' | 'simulation' | 'flows';
+type Tab = 'issues' | 'simulation' | 'cost' | 'flows';
+const TABS: Tab[] = ['issues', 'simulation', 'cost', 'flows'];
+const usd = new Intl.NumberFormat('tr', { style: 'currency', currency: 'USD' });
 const fmt = new Intl.NumberFormat('tr', { maximumFractionDigits: 1 });
 const percent = (u?: number) => (u === undefined ? '—' : `%${Math.round(u * 100)}`);
 
@@ -37,7 +42,7 @@ export function AnalysisPanel() {
     >
       <div className="flex h-9 items-stretch gap-1 px-2">
         <div role="tablist" className="flex">
-          {(['issues', 'simulation', 'flows'] as const).map((t) => (
+          {TABS.map((t) => (
             <button
               key={t}
               role="tab"
@@ -48,7 +53,7 @@ export function AnalysisPanel() {
               }}
               className="flex items-center gap-2 border-b-2 border-transparent px-3 text-sm text-ink-muted aria-selected:border-ink aria-selected:text-ink"
             >
-              {t === 'flows' ? tr.flows.tab : tr.analysis[t]}
+              {t === 'flows' ? tr.flows.tab : t === 'cost' ? tr.cost.tab : tr.analysis[t]}
               {t === 'issues' && issues.length > 0 && (
                 <span className="tabular-nums">{issues.length}</span>
               )}
@@ -86,6 +91,8 @@ export function AnalysisPanel() {
             <IssueList issues={issues} />
           ) : tab === 'simulation' ? (
             <SimulationView />
+          ) : tab === 'cost' ? (
+            <CostView />
           ) : (
             <FlowsView />
           )}
@@ -180,6 +187,63 @@ function SimulationView() {
         ])}
       />
       <LatencyTool />
+    </div>
+  );
+}
+
+/** What the design costs, and the prices behind it, each one correctable for the project. */
+function CostView() {
+  const doc = useEditor((s) => s.doc);
+  const catalog = useCatalog();
+  const report = useMemo(() => costReport(doc, catalog), [doc, catalog]);
+  const label = (id: string) => doc.nodes.find((n) => n.id === id)?.label ?? id;
+  const keys = [...new Set(report.lines.flatMap((l) => l.priceKeys))]
+    .filter((k) => k !== 'priceUsd')
+    .sort();
+  const t = tr.cost;
+
+  return (
+    <div className="grid gap-6 p-4 md:grid-cols-2">
+      <div className="grid content-start gap-3">
+        <div>
+          <p className="text-sm tabular-nums">
+            {t.totals(
+              usd.format(report.monthlyUsd),
+              report.hardwareUsd > 0 ? usd.format(report.hardwareUsd) : undefined,
+            )}
+          </p>
+          <p className="text-xs text-ink-muted">{t.note(report.priceDate)}</p>
+        </div>
+        <SimTable
+          title={t.lines}
+          empty={t.noLines}
+          head={[t.component, t.amount, t.kind]}
+          rows={report.lines.map((l) => [
+            label(l.nodeId),
+            usd.format(l.usd),
+            l.recurring ? t.monthly : t.oneOff,
+          ])}
+        />
+      </div>
+      <SimTable
+        title={t.prices}
+        empty={t.noPrices}
+        head={[t.key, t.list, t.yours]}
+        rows={keys.map((k) => [
+          <span className="font-mono text-xs whitespace-nowrap">{k}</span>,
+          `${usd.format(PRICES[k] ?? 0)} / ${t.unit(k)}`,
+          <label className="block w-24">
+            <span className="sr-only">{t.yoursFor(k)}</span>
+            <NumberInput
+              value={doc.pricingOverrides[k]}
+              placeholder={String(PRICES[k] ?? 0)}
+              onCommit={(v) =>
+                useEditor.getState().setPriceOverride(k, v !== undefined && v >= 0 ? v : undefined)
+              }
+            />
+          </label>,
+        ])}
+      />
     </div>
   );
 }
