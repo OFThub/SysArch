@@ -189,3 +189,18 @@ describe('price overrides', () => {
     expect(s().doc.pricingOverrides).toEqual({});
   });
 });
+
+describe('trust boundaries', () => {
+  it('keeps each component in one zone, moving it in a single undo step', () => {
+    s().setBoundary({ id: 'a', name: 'A', trust: 'internal', nodeIds: ['api', 'db'] });
+    s().setBoundary({ id: 'b', name: 'B', trust: 'dmz', nodeIds: ['api'] });
+    expect(s().doc.boundaries.map((b) => [b.id, b.nodeIds])).toEqual([
+      ['a', ['db']],
+      ['b', ['api']],
+    ]);
+    undo();
+    expect(s().doc.boundaries.map((b) => [b.id, b.nodeIds])).toEqual([['a', ['api', 'db']]]);
+    s().removeBoundary('a');
+    expect(s().doc.boundaries).toEqual([]);
+  });
+});

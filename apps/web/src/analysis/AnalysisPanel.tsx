@@ -15,11 +15,12 @@ import { tr } from '../i18n/tr';
 import { useCatalog, useEditor } from '../store';
 import { NumberInput } from '../ui/controls';
 import { SeverityIcon } from '../ui/SeverityIcon';
+import { BoundariesView } from './BoundariesView';
 import { FlowsView } from './FlowsView';
 import { issueText, useIssues, viewForIssue } from './issues';
 
-type Tab = 'issues' | 'simulation' | 'cost' | 'flows';
-const TABS: Tab[] = ['issues', 'simulation', 'cost', 'flows'];
+type Tab = 'issues' | 'simulation' | 'cost' | 'threats' | 'flows';
+const TABS: Tab[] = ['issues', 'simulation', 'cost', 'threats', 'flows'];
 const usd = new Intl.NumberFormat('tr', { style: 'currency', currency: 'USD' });
 const fmt = new Intl.NumberFormat('tr', { maximumFractionDigits: 1 });
 const percent = (u?: number) => (u === undefined ? '—' : `%${Math.round(u * 100)}`);
@@ -53,7 +54,7 @@ export function AnalysisPanel() {
               }}
               className="flex items-center gap-2 border-b-2 border-transparent px-3 text-sm text-ink-muted aria-selected:border-ink aria-selected:text-ink"
             >
-              {t === 'flows' ? tr.flows.tab : t === 'cost' ? tr.cost.tab : tr.analysis[t]}
+              {t === 'flows' || t === 'cost' || t === 'threats' ? tr[t].tab : tr.analysis[t]}
               {t === 'issues' && issues.length > 0 && (
                 <span className="tabular-nums">{issues.length}</span>
               )}
@@ -93,6 +94,19 @@ export function AnalysisPanel() {
             <SimulationView />
           ) : tab === 'cost' ? (
             <CostView />
+          ) : tab === 'threats' ? (
+            <div className="grid md:grid-cols-2">
+              <BoundariesView />
+              <div className="border-t border-line md:border-t-0 md:border-l">
+                <h3 className="px-4 pt-4 pb-1.5 text-xs font-medium text-ink-muted">
+                  {tr.threats.findings}
+                </h3>
+                <IssueList
+                  issues={issues.filter((i) => i.category === 'security')}
+                  empty={tr.threats.noFindings}
+                />
+              </div>
+            </div>
           ) : (
             <FlowsView />
           )}
@@ -111,8 +125,8 @@ function focusIssue(issue: Issue) {
   setTimeout(() => canvasApi.fitNodes(issue.nodeIds), view === activeViewId ? 0 : 80);
 }
 
-function IssueList({ issues }: { issues: Issue[] }) {
-  if (!issues.length) return <p className="p-4 text-sm text-ink-muted">{tr.analysis.noIssues}</p>;
+function IssueList({ issues, empty = tr.analysis.noIssues }: { issues: Issue[]; empty?: string }) {
+  if (!issues.length) return <p className="p-4 text-sm text-ink-muted">{empty}</p>;
   return (
     <ul>
       {issues.map((issue) => {

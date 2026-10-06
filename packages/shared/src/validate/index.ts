@@ -13,6 +13,7 @@ import type { Issue, Rule } from './types';
 export * from './types';
 export { describeIssue, ruleContext, runRules } from './engine';
 export { i2cBuses, normalizeI2cAddress, type I2cBus } from './rules/bus';
+export { ENCRYPTABLE } from './rules/stride';
 
 /** Every rule the analysis panel and exports run, in reporting order. */
 export const RULES: readonly Rule[] = [

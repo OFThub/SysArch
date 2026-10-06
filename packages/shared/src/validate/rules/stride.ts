@@ -10,7 +10,16 @@ import type { Rule, RuleContext } from '../types';
 
 const RANK: Record<Boundary['trust'], number> = { internet: 0, dmz: 1, device: 1, internal: 2 };
 /** Links that carry data in the clear unless they say they are encrypted. */
-const NETWORK = new Set(['HTTP', 'gRPC', 'WebSocket', 'MQTT', 'SQL', 'AMQP', 'TCP']);
+export const ENCRYPTABLE: ReadonlySet<string> = new Set([
+  'HTTP',
+  'gRPC',
+  'WebSocket',
+  'MQTT',
+  'SQL',
+  'AMQP',
+  'TCP',
+]);
+const NETWORK = ENCRYPTABLE;
 
 /** The zone each node sits in: its first boundary. */
 function zones(doc: ArchDoc) {

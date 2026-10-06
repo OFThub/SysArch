@@ -70,8 +70,9 @@ export function saasApp(): ArchDoc {
     sessions: at(660, 560),
     auth: at(660, 760),
     worker: at(1000, 160),
-    billing: at(1000, 560),
+    // The outside services share a column, so their zone frames nothing else.
     mail: at(1340, 160),
+    billing: at(1340, 560),
   };
 
   return ArchDocSchema.parse(doc);

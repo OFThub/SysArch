@@ -2,6 +2,7 @@ import {
   pinsOf,
   pinSupports,
   PROTOCOLS,
+  ENCRYPTABLE,
   ProtocolSchema,
   suggestPinMap,
   type ArchEdge,
@@ -274,6 +275,15 @@ function EdgeInspector({ edge }: { edge: ArchEdge }) {
             options={TRANSPORTS.map((t) => ({ value: t, label: t || tr.inspector.none }))}
           />
         </Field>
+      )}
+
+      {/* What the trust-boundary rules ask of a link that crosses zones. */}
+      {ENCRYPTABLE.has(edge.protocol) && (
+        <Checkbox
+          label={tr.inspector.encrypted}
+          checked={edge.props.encrypted === true}
+          onChange={(encrypted) => update(edge.id, { props: { encrypted } })}
+        />
       )}
 
       {/* A power line carries current, not data: its load is the power budget. */}

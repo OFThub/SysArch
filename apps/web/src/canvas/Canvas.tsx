@@ -10,6 +10,7 @@ import {
   type NodeChange,
 } from '@xyflow/react';
 import '@xyflow/react/dist/base.css';
+import { BoundaryOverlay } from './BoundaryOverlay';
 import { useCallback, useEffect, useMemo, useRef, useState, type DragEvent } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { issueIndex, issueText, useIssues, type IssueMark } from '../analysis/issues';
@@ -250,6 +251,7 @@ export function Canvas() {
           color="var(--canvas-dot)"
           bgColor="var(--canvas)"
         />
+        <BoundaryOverlay />
       </ReactFlow>
       {model.nodes.length === 0 && (
         <p className="pointer-events-none absolute inset-0 flex items-center justify-center text-ink-muted">
