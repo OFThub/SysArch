@@ -10,3 +10,4 @@ export * from './validate';
 export * from './simulate';
 export * from './export';
 export * from './import';
+export * from './pricing';
