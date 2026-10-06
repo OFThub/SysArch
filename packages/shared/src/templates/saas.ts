@@ -44,6 +44,21 @@ export function saasApp(): ArchDoc {
     link('e-mail', 'worker', 'mail', 'HTTP'),
   ];
 
+  // Trust zones: payments and mail are outside, the balancer stands in front,
+  // everything else is internal; every link that crosses a zone runs TLS.
+  doc.boundaries = [
+    { id: 'outside', name: 'İnternet', trust: 'internet', nodeIds: ['billing', 'mail'] },
+    { id: 'front', name: 'DMZ', trust: 'dmz', nodeIds: ['edge'] },
+    {
+      id: 'inside',
+      name: 'İç ağ',
+      trust: 'internal',
+      nodeIds: ['web', 'api', 'auth', 'sessions', 'db', 'jobs', 'worker'],
+    },
+  ];
+  const crossing = new Set(['e-web', 'e-api', 'e-charge', 'e-mail']);
+  for (const e of doc.edges) if (crossing.has(e.id)) e.props = { encrypted: true };
+
   doc.flows = [{ id: 'checkout', name: 'Ödeme', steps: ['e-api', 'e-charge'], slaMs: 1000 }];
 
   doc.views.find((v) => v.id === 'overview')!.positions = {
@@ -55,8 +70,9 @@ export function saasApp(): ArchDoc {
     sessions: at(660, 560),
     auth: at(660, 760),
     worker: at(1000, 160),
-    billing: at(1000, 560),
+    // The outside services share a column, so their zone frames nothing else.
     mail: at(1340, 160),
+    billing: at(1340, 560),
   };
 
   return ArchDocSchema.parse(doc);

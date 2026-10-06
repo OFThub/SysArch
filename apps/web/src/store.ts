@@ -9,6 +9,7 @@ import {
   type ArchNode,
   type Catalog,
   type Clip,
+  type Boundary,
   type Flow,
 } from '@sysarch/shared';
 import { useMemo } from 'react';
@@ -63,6 +64,14 @@ export interface EditorState {
   removeFlow: (id: string) => void;
   /** A doc written in the code editor; a burst of typing is one undo step. */
   applyCode: (doc: ArchDoc) => void;
+  /** The project's own price for a price key; undefined goes back to the list price. */
+  setPriceOverride: (key: string, usd: number | undefined) => void;
+  /**
+   * Adds or replaces a trust boundary; typing its name is one undo step. A
+   * component sits in one zone, so its members leave any other boundary.
+   */
+  setBoundary: (boundary: Boundary) => void;
+  removeBoundary: (id: string) => void;
 }
 
 /** Nodes added while a drill view is open live inside its root. */
@@ -243,6 +252,37 @@ export const useEditor = create<EditorState>()(
           };
         });
       },
+
+      setPriceOverride: (key, usd) => {
+        tagEdit(`price:${key}`);
+        set((s) => {
+          const { [key]: _, ...rest } = s.doc.pricingOverrides;
+          return {
+            doc: { ...s.doc, pricingOverrides: usd === undefined ? rest : { ...rest, [key]: usd } },
+          };
+        });
+      },
+
+      setBoundary: (boundary) => {
+        tagEdit(`boundary:${boundary.id}`);
+        set((s) => {
+          const members = new Set(boundary.nodeIds);
+          const others = s.doc.boundaries.map((b) =>
+            b.id === boundary.id
+              ? boundary
+              : { ...b, nodeIds: b.nodeIds.filter((id) => !members.has(id)) },
+          );
+          const boundaries = others.some((b) => b.id === boundary.id)
+            ? others
+            : [...others, boundary];
+          return { doc: { ...s.doc, boundaries } };
+        });
+      },
+
+      removeBoundary: (id) =>
+        set((s) => ({
+          doc: { ...s.doc, boundaries: s.doc.boundaries.filter((b) => b.id !== id) },
+        })),
 
       applyRemote: (doc, revision) =>
         set((s) => ({

@@ -27,6 +27,13 @@ overview tab where cross-domain links are drawn.
 - **Simulation.** Link bandwidth versus payload rate, node capacity
   versus incoming requests, power budget and battery life per supply, and
   shortest-path latency between two components.
+- **Cost.** A monthly estimate per component (managed services, GPU
+  hours, LLM tokens) and the hardware total, from dated list prices the
+  project can override.
+- **Threat modeling.** Draw trust zones (internet, DMZ, device,
+  internal); STRIDE rules flag unencrypted links across zones, public
+  APIs without authentication, exposed data stores and personal data sent
+  to outside services.
 - **Drill-down.** Double-click a component to design its inside in a view
   of its own; a breadcrumb leads back out.
 - **Flows.** Turn the links a request or a reading travels into a named

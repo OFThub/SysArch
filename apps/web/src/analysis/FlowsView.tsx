@@ -126,7 +126,7 @@ function FlowRow({ flow }: { flow: Flow }) {
   );
 }
 
-function RowButton(props: { onClick: () => void; disabled?: boolean; children: string }) {
+export function RowButton(props: { onClick: () => void; disabled?: boolean; children: string }) {
   return (
     <button
       {...props}

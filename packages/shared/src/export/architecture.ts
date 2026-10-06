@@ -8,6 +8,7 @@ import {
   type Domain,
 } from '../schema';
 import { flowTrace } from '../flows';
+import { costReport } from '../pricing';
 import { describeIssue, RULES, validate, type Lang } from '../validate';
 
 export interface ExportFile {
@@ -37,6 +38,12 @@ const T = {
       connection: ['id', 'from', 'to', 'protocol', 'pins', 'payload'],
     },
     notes: 'Notes',
+    cost: 'Cost estimate',
+    costTotals: (monthly: number, hardware: number, date: string) =>
+      `About $${monthly} a month to run and $${hardware} of hardware, from list prices as of ${date}; the project can override any price.`,
+    costHead: ['component', 'cost (USD)', 'kind', 'priced by'],
+    monthly: 'monthly',
+    oneOff: 'one-off',
     flows: 'Flows',
     flowLine: (steps: number, ms: number, sla?: number) =>
       `${steps} steps, ${ms} ms end to end${sla === undefined ? '' : ` (target ${sla} ms)`}`,
@@ -63,6 +70,12 @@ const T = {
       connection: ['kimlik', 'kaynak', 'hedef', 'protokol', 'pinler', 'veri'],
     },
     notes: 'Notlar',
+    cost: 'Maliyet tahmini',
+    costTotals: (monthly: number, hardware: number, date: string) =>
+      `Aylık yaklaşık $${monthly} işletme ve $${hardware} donanım; ${date} liste fiyatlarıyla, her fiyat projede değiştirilebilir.`,
+    costHead: ['bileşen', 'maliyet (USD)', 'tür', 'fiyat anahtarı'],
+    monthly: 'aylık',
+    oneOff: 'bir kez',
     flows: 'Akışlar',
     flowLine: (steps: number, ms: number, sla?: number) =>
       `${steps} adım, uçtan uca ${ms} ms${sla === undefined ? '' : ` (hedef ${sla} ms)`}`,
@@ -261,6 +274,28 @@ export function architectureMarkdown(
     for (const b of [...doc.boundaries].sort(byId))
       out.push(`- ${code(b.id)} ${b.name} (${b.trust}): ${b.nodeIds.map(code).join(', ') || '—'}`);
     out.push('');
+  }
+
+  const cost = costReport(doc, catalog);
+  if (cost.lines.length) {
+    out.push(
+      `## ${t.cost}`,
+      '',
+      t.costTotals(cost.monthlyUsd, cost.hardwareUsd, cost.priceDate),
+      '',
+    );
+    out.push(
+      table(
+        t.costHead,
+        cost.lines.map((l) => [
+          code(l.nodeId),
+          `${l.usd}`,
+          l.recurring ? t.monthly : t.oneOff,
+          l.priceKeys.map(code).join(', '),
+        ]),
+      ),
+      '',
+    );
   }
 
   out.push(`## ${t.issues}`, '');

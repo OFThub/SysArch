@@ -116,6 +116,26 @@ flowchart LR
   n_usb -->|Power| n_vent
 \`\`\`
 
+## Cost estimate
+
+About $128.97 a month to run and $30 of hardware, from list prices as of 2026-10; the project can override any price.
+
+| component | cost (USD) | kind | priced by |
+| --- | --- | --- | --- |
+| \`db\` | 50 | monthly | \`managed-db\` |
+| \`anomaly\` | 30 | monthly | \`container\` |
+| \`api\` | 30 | monthly | \`container\` |
+| \`esp32\` | 15 | one-off | \`priceUsd\` |
+| \`mqtt\` | 10 | monthly | \`queue\` |
+| \`bme280\` | 6 | one-off | \`priceUsd\` |
+| \`dashboard\` | 5 | monthly | \`static-hosting\` |
+| \`oled\` | 4 | one-off | \`priceUsd\` |
+| \`usb\` | 3 | one-off | \`priceUsd\` |
+| \`train\` | 2.12 | monthly | \`gpu-hour:T4\` |
+| \`vent\` | 2 | one-off | \`priceUsd\` |
+| \`llm\` | 1.8 | monthly | \`llm-in:claude-haiku-4-5\`, \`llm-out:claude-haiku-4-5\` |
+| \`history\` | 0.05 | monthly | \`object-storage-gb\` |
+
 ## Open issues
 
 None.

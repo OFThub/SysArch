@@ -58,6 +58,7 @@ export const tr = {
     unmapped: 'Eşlenmedi',
     bandwidth: 'Bant genişliği',
     transport: 'Taşıma',
+    encrypted: 'Şifreli (TLS)',
     payload: 'Veri yükü',
     addPayload: 'Veri yükü ekle',
     removePayload: 'Veri yükünü kaldır',
@@ -67,6 +68,51 @@ export const tr = {
     topic: 'Konu',
     fields: 'Alanlar',
     fieldsHint: 'Her satıra bir alan: ad: tür',
+  },
+  threats: {
+    tab: 'Tehditler',
+    boundaries: 'Güven sınırları',
+    create: 'Seçili bileşenlerden sınır oluştur',
+    noBoundaries:
+      'Henüz güven sınırı yok. Aynı güven düzeyindeki bileşenleri seç ve bir sınır oluştur; bölgeler arasından geçen bağlantılar denetlenir.',
+    defaultName: (n: number) => `Bölge ${n}`,
+    name: 'Sınır adı',
+    trustLabel: 'Güven düzeyi',
+    trust: { internet: 'İnternet', dmz: 'DMZ', device: 'Cihaz', internal: 'İç ağ' },
+    members: (n: number) => `${n} bileşen`,
+    addSelected: 'Seçilileri ekle',
+    show: 'Göster',
+    remove: 'Sil',
+    findings: 'Güvenlik bulguları',
+    noFindings: 'Güvenlik bulgusu yok.',
+  },
+  cost: {
+    tab: 'Maliyet',
+    totals: (monthly: string, hardware?: string) =>
+      `Aylık yaklaşık ${monthly} işletme${hardware ? `, ${hardware} donanım` : ''}`,
+    note: (date: string) =>
+      `${date} liste fiyatlarıyla tahmin. Bölgeye, boyuta ve indirime göre değişir; fiyatları projene göre düzelt.`,
+    lines: 'Kalemler',
+    noLines: 'Fiyatlanacak bileşen yok.',
+    component: 'Bileşen',
+    amount: 'Tutar',
+    kind: 'Tür',
+    monthly: 'aylık',
+    oneOff: 'bir kez',
+    prices: 'Fiyatlar',
+    noPrices: 'Bu tasarımda düzeltilecek fiyat yok.',
+    key: 'Anahtar',
+    list: 'Liste fiyatı',
+    yours: 'Proje fiyatı',
+    yoursFor: (key: string) => `${key} için proje fiyatı`,
+    unit: (key: string) =>
+      key.startsWith('llm-')
+        ? '1M token'
+        : key.startsWith('gpu-hour')
+          ? 'saat'
+          : key === 'object-storage-gb'
+            ? 'GB, aylık'
+            : 'ay',
   },
   analysis: {
     title: 'Analiz',
