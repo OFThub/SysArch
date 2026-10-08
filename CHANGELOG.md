@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.1] - 2026-10-08
+
+### Added
+
+- Terraform for Docker: `terraform/docker/` in the code zip runs the
+  containers of `docker-compose.yml` through the Docker provider, under
+  the same hostnames. Passwords are asked for at apply time, never
+  written.
+
+### Changed
+
+- The AWS Terraform moved from `terraform/` to `terraform/aws/`, so each
+  provider is its own module to init and apply.
+
 ## [0.6.0] - 2026-10-08
 
 ### Added
@@ -143,7 +157,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Continuous integration for formatting, types, lint, unit and end-to-end
   tests.
 
-[unreleased]: https://github.com/OFThub/SysArch/compare/v0.6.0...HEAD
+[unreleased]: https://github.com/OFThub/SysArch/compare/v0.6.1...HEAD
+[0.6.1]: https://github.com/OFThub/SysArch/compare/v0.6.0...v0.6.1
 [0.6.0]: https://github.com/OFThub/SysArch/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/OFThub/SysArch/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/OFThub/SysArch/compare/v0.3.0...v0.4.0

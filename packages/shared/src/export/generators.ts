@@ -4,6 +4,7 @@ import type { ArchDoc, ArchEdge, ArchNode, Payload } from '../schema';
 import { i2cBuses, normalizeI2cAddress } from '../validate';
 import type { ExportFile } from './architecture';
 import { inComment } from './comment';
+import { containers } from './containers';
 import { bomFiles, wokwiFiles } from './hardware';
 import { terraformFiles } from './terraform';
 
@@ -30,92 +31,33 @@ const cName = (s: string) =>
 
 // ---------------------------------------------------------------- compose
 
-/** Code the team writes: built from a service folder, not pulled as an image. */
-const CUSTOM_CODE = new Set([
-  'api',
-  'frontend',
-  'agent',
-  'preprocessing',
-  'evaluation',
-  'training',
-]);
-
-/** Engine choice overrides the type's default image. */
-const ENGINE_IMAGES: Record<string, { image: string; ports?: string[]; data?: string }> = {
-  PostgreSQL: {
-    image: 'postgres:17-alpine',
-    ports: ['5432:5432'],
-    data: '/var/lib/postgresql/data',
-  },
-  MySQL: { image: 'mysql:8.4', ports: ['3306:3306'], data: '/var/lib/mysql' },
-  MongoDB: { image: 'mongo:8', ports: ['27017:27017'], data: '/data/db' },
-  Redis: { image: 'redis:7-alpine', ports: ['6379:6379'], data: '/data' },
-  Valkey: { image: 'valkey/valkey:8-alpine', ports: ['6379:6379'], data: '/data' },
-  Memcached: { image: 'memcached:1.6-alpine', ports: ['11211:11211'] },
-  RabbitMQ: {
-    image: 'rabbitmq:4-management-alpine',
-    ports: ['5672:5672', '15672:15672'],
-    data: '/var/lib/rabbitmq',
-  },
-  Mosquitto: { image: 'eclipse-mosquitto:2', ports: ['1883:1883'], data: '/mosquitto/data' },
-  NATS: { image: 'nats:2', ports: ['4222:4222'] },
-  Qdrant: { image: 'qdrant/qdrant', ports: ['6333:6333'], data: '/qdrant/storage' },
-};
-
-/** Required secrets come from .env; compose refuses to start without them. */
-const ENGINE_ENV: Record<string, Record<string, string>> = {
-  PostgreSQL: { POSTGRES_PASSWORD: '${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}' },
-  MySQL: { MYSQL_ROOT_PASSWORD: '${MYSQL_ROOT_PASSWORD:?set MYSQL_ROOT_PASSWORD in .env}' },
-};
-
-const inCompose = (n: ArchNode, catalog: Catalog) =>
-  n.domain !== 'hardware' &&
-  (n.deploy === undefined || n.deploy.target === 'docker') &&
-  (CUSTOM_CODE.has(n.type) ||
-    ENGINE_IMAGES[String(n.props.engine)] ||
-    catalog.get(n.type)?.exportHints.dockerImage);
-
 export function composeFiles(doc: ArchDoc, catalog: Catalog): ExportFile[] {
-  const nodes = doc.nodes.filter((n) => inCompose(n, catalog)).sort(byId);
-  if (!nodes.length) return [];
-  const names = new Map(nodes.map((n) => [n.id, slug(n.id)]));
+  const list = containers(doc, catalog);
+  if (!list.length) return [];
   const services: Record<string, Record<string, unknown>> = {};
   const volumes: Record<string, null> = {};
   const readmes: ExportFile[] = [];
 
-  for (const n of nodes) {
-    const name = names.get(n.id)!;
-    const hints = catalog.get(n.type)?.exportHints ?? {};
-    const engine = ENGINE_IMAGES[String(n.props.engine)];
+  for (const c of list) {
     const service: Record<string, unknown> = {};
-
-    if (CUSTOM_CODE.has(n.type)) {
-      service.build = `./services/${name}`;
-      readmes.push({ path: `services/${name}/README.md`, content: serviceReadme(doc, n) });
-    } else service.image = engine?.image ?? hints.dockerImage;
-
-    const ports = engine?.ports ?? hints.composePorts;
-    if (ports?.length) service.ports = ports;
-    const env = ENGINE_ENV[String(n.props.engine)];
-    if (env) service.environment = env;
-    if (engine?.data) {
-      volumes[`${name}-data`] = null;
-      service.volumes = [`${name}-data:${engine.data}`];
-    }
-    if (n.props.engine === 'Mosquitto')
-      service.volumes = [
-        ...((service.volumes as string[]) ?? []),
-        './mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro',
-      ];
-
-    // A caller starts after what it calls.
-    const deps = [
-      ...new Set(doc.edges.filter((e) => e.source === n.id).map((e) => names.get(e.target))),
-    ]
-      .filter((d): d is string => !!d && d !== name)
-      .sort();
-    if (deps.length) service.depends_on = deps;
-    services[name] = service;
+    if (c.build) {
+      service.build = `./${c.build}`;
+      readmes.push({ path: `${c.build}/README.md`, content: serviceReadme(doc, c.node) });
+    } else service.image = c.image;
+    if (c.ports.length) service.ports = c.ports;
+    // Compose refuses to start until .env sets them.
+    if (c.secrets.length)
+      service.environment = Object.fromEntries(
+        c.secrets.map((k) => [k, `\${${k}:?set ${k} in .env}`]),
+      );
+    if (c.data) volumes[`${c.name}-data`] = null;
+    const mounts = [
+      ...(c.data ? [`${c.name}-data:${c.data}`] : []),
+      ...c.files.map(([from, to]) => `./${from}:${to}:ro`),
+    ];
+    if (mounts.length) service.volumes = mounts;
+    if (c.dependsOn.length) service.depends_on = c.dependsOn;
+    services[c.name] = service;
   }
 
   const compose = {
