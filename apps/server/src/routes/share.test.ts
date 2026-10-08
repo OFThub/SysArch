@@ -19,20 +19,20 @@ describe('share links', () => {
     const { id } = await json<{ id: string }>(created);
     const share = `/projects/${id}/share`;
 
-    expect(await json(await call(ada, share))).toEqual({ token: null });
+    expect(await json(await call(ada, share))).toEqual({ token: null, comments: false });
     const made = await call(ada, share, 'POST');
     expect(made.status).toBe(201);
     const { token } = await json<{ token: string }>(made);
     expect(token).toMatch(/^[A-Za-z0-9_-]{43}$/);
     // Sharing again keeps the same link.
-    expect(await json(await call(ada, share, 'POST'))).toEqual({ token });
+    expect(await json(await call(ada, share, 'POST'))).toEqual({ token, comments: false });
 
-    // Read without any session; nothing but the design comes back.
+    // Read without any session; nothing but the design and its comment setting.
     const read = await call(null, `/share/${token}`);
     expect(read.status).toBe(200);
     expect(read.headers.get('Cache-Control')).toContain('no-store');
-    const body = await json<{ name: string; doc: ArchDoc }>(read);
-    expect(Object.keys(body).sort()).toEqual(['doc', 'name']);
+    const body = await json<{ name: string; doc: ArchDoc; comments: boolean }>(read);
+    expect(Object.keys(body).sort()).toEqual(['comments', 'doc', 'name']);
     expect(body.doc.nodes.length).toBe(seraIot().nodes.length);
 
     // Only the owner manages it; guesses and malformed tokens look missing.
