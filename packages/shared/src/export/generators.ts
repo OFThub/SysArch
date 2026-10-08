@@ -4,6 +4,7 @@ import type { ArchDoc, ArchEdge, ArchNode, Payload } from '../schema';
 import { i2cBuses, normalizeI2cAddress } from '../validate';
 import type { ExportFile } from './architecture';
 import { bomFiles, wokwiFiles } from './hardware';
+import { terraformFiles } from './terraform';
 
 /*
  * Starting points, not finished code: each generator writes what the design
@@ -346,4 +347,5 @@ export const generateCode = (doc: ArchDoc, catalog: Catalog): ExportFile[] => [
   ...pinsFiles(doc),
   ...wokwiFiles(doc, catalog),
   ...bomFiles(doc, catalog),
+  ...terraformFiles(doc, catalog),
 ];
