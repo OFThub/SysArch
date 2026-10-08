@@ -12,6 +12,7 @@ import { createEventBus } from './events';
 import { assistantRoutes } from './routes/assistant';
 import { MAX_BODY_BYTES, projectRoutes } from './routes/projects';
 import { proposalRoutes } from './routes/proposals';
+import { shareAdminRoutes, sharePublicRoutes } from './routes/share';
 import { snapshotRoutes } from './routes/snapshots';
 
 export type AppEnv = { Variables: { user: SessionUser } };
@@ -48,6 +49,8 @@ export function createApp({ db, auth, env, model }: AppDeps) {
   const api = new Hono<AppEnv>()
     .get('/health', (c) => c.json({ ok: true }))
     .get('/providers', (c) => c.json({ providers: enabledProviders(env) }))
+    // Read-only links: public on purpose, the unguessable token is the key.
+    .route('/share', sharePublicRoutes(db))
     .get('/me', requireUser, (c) => {
       const u = c.get('user');
       return c.json({ id: u.id, name: u.name, email: u.email, image: u.image ?? null });
@@ -65,7 +68,8 @@ export function createApp({ db, auth, env, model }: AppDeps) {
     .route('/projects', projectRoutes(db, events))
     .route('/projects', proposalRoutes(db, events))
     .route('/projects', assistantRoutes(db, events, model))
-    .route('/projects', snapshotRoutes(db, events));
+    .route('/projects', snapshotRoutes(db, events))
+    .route('/projects', shareAdminRoutes(db));
 
   const app = new Hono();
   app.use('*', secureHeaders());
