@@ -69,7 +69,7 @@ Work as a senior engineer fluent in full stack TypeScript, embedded systems
 | `packages/shared/src/import/`    | compose, Mermaid, Wokwi → `Imported` → `importOps`       |
 | `packages/shared/src/templates/` | Starter docs (Sera IoT, edge AI, RAG, SaaS), fixtures    |
 | `apps/server/src/app.ts`         | Hono app; `ApiType` feeds the web RPC client             |
-| `apps/server/src/routes/`        | Project CRUD with revision compare-and-swap              |
+| `apps/server/src/routes/`        | Project CRUD (revision CAS), proposals, snapshots, share |
 | `packages/shared/src/ops.ts`     | `Op` model, `applyOps`, `diffDocs`: every outside change |
 | `apps/server/src/ai/`            | Assistant loop: model edits a draft through ops          |
 | `apps/mcp/src/`                  | MCP server; reads via shared, writes only proposals      |

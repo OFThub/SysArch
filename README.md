@@ -48,7 +48,11 @@ overview tab where cross-domain links are drawn.
   `architecture.json`, and a zip holding generated
   `docker-compose.yml`, OpenAPI specs, `mosquitto.conf` with a topic
   list, a `pins.h` per microcontroller, a Wokwi `diagram.json` that
-  simulates the hardware tab, and a bill of materials (`bom.csv`).
+  simulates the hardware tab, a bill of materials (`bom.csv`), and a
+  Terraform starting point for AWS (`terraform/main.tf`).
+- **Versions and sharing.** Named snapshots to compare against, restore
+  (in full or in part) or fork into a new project; a read-only link that
+  opens without an account and can be revoked.
 - **Import.** A docker-compose file, a Mermaid flowchart (bare or in a
   README) or a Wokwi `diagram.json` comes in as a proposal: previewed on
   the canvas, applied in full or in part.

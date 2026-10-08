@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Snapshots under "Sürümler": save the design under a name, compare it
+  with the current one on the canvas, restore all or part of it as one
+  undo step, or open a copy as a new project.
+- Read-only share links under "Paylaş": anyone with the link sees the
+  design without an account; revoking the link stops it at once.
+- Terraform export: `terraform/main.tf` and `variables.tf` in the code zip
+  for components bound for AWS (ECS, RDS, ElastiCache, SQS, load
+  balancer, S3), valid against the AWS provider.
+
+### Changed
+
+- The editor header shows versions and sharing as icon buttons.
+
 ## [0.5.0] - 2026-10-06
 
 ### Added
