@@ -105,10 +105,11 @@ export function SnapshotsMenu() {
       <button
         ref={button}
         popoverTarget="snapshots-menu"
-        className="flex h-7 items-center gap-1.5 rounded-chip border border-line px-2.5 text-sm hover:bg-raised"
+        aria-label={t.open}
+        title={t.open}
+        className="flex size-7 items-center justify-center text-ink-muted hover:text-ink"
       >
-        <History size={14} strokeWidth={1.5} aria-hidden />
-        {t.open}
+        <History size={16} strokeWidth={1.5} aria-hidden />
       </button>
       <div
         ref={menu}

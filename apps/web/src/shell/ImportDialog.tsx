@@ -19,7 +19,7 @@ export function ImportButton() {
     <>
       <button
         onClick={() => setOpen(true)}
-        className="flex h-7 items-center gap-1.5 rounded-chip border border-line px-2.5 text-sm hover:bg-raised"
+        className="flex h-7 items-center gap-1.5 whitespace-nowrap rounded-chip border border-line px-2.5 text-sm hover:bg-raised"
       >
         <Upload size={14} strokeWidth={1.5} aria-hidden />
         {tr.import.open}

@@ -9,12 +9,22 @@ const TABS = [
   { id: 'overview', label: tr.view.overview, channel: 'var(--ink)' },
 ];
 
-/** Domain tabs carry their channel color as a dot and active underline. */
+/** The editor's view tabs, bound to the store. */
 export function ViewTabs() {
   // Inside a component, the tab it was opened from stays marked.
   const active = useEditor((s) => drillPath(s.doc, s.activeViewId)?.domain ?? s.activeViewId);
   const setActive = useEditor((s) => s.setActiveView);
+  return <ViewTabList active={active} onSelect={setActive} />;
+}
 
+/** Domain tabs carry their channel color as a dot and active underline. */
+export function ViewTabList({
+  active,
+  onSelect: setActive,
+}: {
+  active: string;
+  onSelect: (viewId: string) => void;
+}) {
   // Arrow keys move between tabs, per the WAI-ARIA tabs pattern.
   const onKeyDown = (e: KeyboardEvent) => {
     if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;

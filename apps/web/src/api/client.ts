@@ -50,6 +50,31 @@ export async function createProposal(
     : { ok: false, error: body.error ?? `http ${res.status}` };
 }
 
+const share = api.projects[':id'].share;
+
+/** The project's read-only link token, or null when it is not shared. */
+export async function getShare(projectId: string): Promise<string | null> {
+  const res = await share.$get({ param: { id: projectId } });
+  if (!res.ok) throw new Error(`http ${res.status}`);
+  return ((await res.json()) as { token: string | null }).token;
+}
+
+export async function createShare(projectId: string): Promise<string> {
+  const res = await share.$post({ param: { id: projectId } });
+  if (!res.ok) throw new Error(`http ${res.status}`);
+  return ((await res.json()) as { token: string }).token;
+}
+
+export async function revokeShare(projectId: string): Promise<boolean> {
+  return (await share.$delete({ param: { id: projectId } })).ok;
+}
+
+/** A shared design, read without a session; null when the link is unknown or revoked. */
+export async function readShared(token: string): Promise<{ name: string; doc: ArchDoc } | null> {
+  const res = await api.share[':token'].$get({ param: { token } });
+  return res.ok ? ((await res.json()) as { name: string; doc: ArchDoc }) : null;
+}
+
 export type Snapshot = { id: string; name: string; revision: number; createdAt: string };
 
 const snaps = api.projects[':id'].snapshots;
