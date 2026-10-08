@@ -48,8 +48,9 @@ overview tab where cross-domain links are drawn.
   `architecture.json`, and a zip holding generated
   `docker-compose.yml`, OpenAPI specs, `mosquitto.conf` with a topic
   list, a `pins.h` per microcontroller, a Wokwi `diagram.json` that
-  simulates the hardware tab, a bill of materials (`bom.csv`), and a
-  Terraform starting point for AWS (`terraform/main.tf`).
+  simulates the hardware tab, a bill of materials (`bom.csv`), and
+  Terraform starting points for AWS (`terraform/aws`) and for Docker
+  (`terraform/docker`, the same containers as the compose file).
 - **Versions and sharing.** Named snapshots to compare against, restore
   (in full or in part) or fork into a new project; a read-only link that
   opens without an account and can be revoked.

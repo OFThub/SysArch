@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Terraform for Docker: `terraform/docker/` in the code zip runs the
+  containers of `docker-compose.yml` through the Docker provider, under
+  the same hostnames. Passwords are asked for at apply time, never
+  written.
+
+### Changed
+
+- The AWS Terraform moved from `terraform/` to `terraform/aws/`, so each
+  provider is its own module to init and apply.
+
 ## [0.6.0] - 2026-10-08
 
 ### Added
