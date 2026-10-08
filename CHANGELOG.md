@@ -24,6 +24,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - The editor header shows versions and sharing as icon buttons.
 
+### Security
+
+- A label, project name or pin name containing a line break could end a
+  comment in generated `pins.h` (since 0.1.0) or Terraform and add code to
+  it. User text in generated comments is now kept on one line.
+
 ## [0.5.0] - 2026-10-06
 
 ### Added
