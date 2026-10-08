@@ -42,7 +42,7 @@ export const proposals = sqliteTable(
     projectId: text('project_id')
       .notNull()
       .references(() => projects.id, { onDelete: 'cascade' }),
-    source: text('source', { enum: ['chat', 'mcp', 'import'] }).notNull(),
+    source: text('source', { enum: ['chat', 'mcp', 'import', 'snapshot'] }).notNull(),
     summary: text('summary').notNull(),
     // Op[]; parsed with OpSchema on the way in and again before applying.
     ops: text('ops', { mode: 'json' }).$type<unknown>().notNull(),
@@ -55,6 +55,26 @@ export const proposals = sqliteTable(
     createdAt: integer('created_at', { mode: 'timestamp_ms' }).default(now).notNull(),
   },
   (t) => [index('proposals_project_idx').on(t.projectId)],
+);
+
+/**
+ * A named copy of a project's saved doc. Snapshots never change: comparing
+ * or restoring goes through a proposal, forking makes a new project.
+ */
+export const snapshots = sqliteTable(
+  'snapshots',
+  {
+    id: text('id').primaryKey(),
+    projectId: text('project_id')
+      .notNull()
+      .references(() => projects.id, { onDelete: 'cascade' }),
+    name: text('name').notNull(),
+    doc: text('doc', { mode: 'json' }).$type<unknown>().notNull(),
+    // The project revision it was taken at.
+    revision: integer('revision').notNull(),
+    createdAt: integer('created_at', { mode: 'timestamp_ms' }).default(now).notNull(),
+  },
+  (t) => [index('snapshots_project_idx').on(t.projectId)],
 );
 
 /** The assistant chat of a project, as plain text turns. */

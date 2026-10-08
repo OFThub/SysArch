@@ -50,6 +50,79 @@ export async function createProposal(
     : { ok: false, error: body.error ?? `http ${res.status}` };
 }
 
+const share = api.projects[':id'].share;
+
+/** The project's read-only link token, or null when it is not shared. */
+export async function getShare(projectId: string): Promise<string | null> {
+  const res = await share.$get({ param: { id: projectId } });
+  if (!res.ok) throw new Error(`http ${res.status}`);
+  return ((await res.json()) as { token: string | null }).token;
+}
+
+export async function createShare(projectId: string): Promise<string> {
+  const res = await share.$post({ param: { id: projectId } });
+  if (!res.ok) throw new Error(`http ${res.status}`);
+  return ((await res.json()) as { token: string }).token;
+}
+
+export async function revokeShare(projectId: string): Promise<boolean> {
+  return (await share.$delete({ param: { id: projectId } })).ok;
+}
+
+/** A shared design, read without a session; null when the link is unknown or revoked. */
+export async function readShared(token: string): Promise<{ name: string; doc: ArchDoc } | null> {
+  const res = await api.share[':token'].$get({ param: { token } });
+  return res.ok ? ((await res.json()) as { name: string; doc: ArchDoc }) : null;
+}
+
+export type Snapshot = { id: string; name: string; revision: number; createdAt: string };
+
+const snaps = api.projects[':id'].snapshots;
+const snap = snaps[':sid'];
+
+export async function listSnapshots(projectId: string): Promise<Snapshot[]> {
+  const res = await snaps.$get({ param: { id: projectId } });
+  if (!res.ok) throw new Error(`http ${res.status}`);
+  return (await res.json()).snapshots as unknown as Snapshot[];
+}
+
+export async function takeSnapshot(projectId: string, name: string): Promise<boolean> {
+  return (await snaps.$post({ param: { id: projectId }, json: { name } })).ok;
+}
+
+/** A proposal back to the snapshot: its id, `null` when nothing differs, or the reason it failed. */
+export async function restoreSnapshot(
+  projectId: string,
+  snapshotId: string,
+  summary: string,
+): Promise<{ ok: true; id: string | null } | { ok: false; error: string }> {
+  const res = await snap.restore.$post({
+    param: { id: projectId, sid: snapshotId },
+    json: { summary },
+  });
+  const body = (await res.json().catch(() => ({}))) as {
+    proposal?: Proposal | null;
+    error?: string;
+  };
+  return res.ok
+    ? { ok: true, id: body.proposal?.id ?? null }
+    : { ok: false, error: body.error ?? `http ${res.status}` };
+}
+
+/** Copies a snapshot into a new project; its id. */
+export async function forkSnapshot(
+  projectId: string,
+  snapshotId: string,
+  name: string,
+): Promise<string | null> {
+  const res = await snap.fork.$post({ param: { id: projectId, sid: snapshotId }, json: { name } });
+  return res.ok ? ((await res.json()) as { id: string }).id : null;
+}
+
+export async function deleteSnapshot(projectId: string, snapshotId: string): Promise<boolean> {
+  return (await snap.$delete({ param: { id: projectId, sid: snapshotId } })).ok;
+}
+
 export type ApplyResult =
   | { ok: true; revision: number; doc: ArchDoc }
   /** Ops the current doc no longer allows, by their index in the proposal. */

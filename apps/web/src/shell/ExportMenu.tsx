@@ -70,7 +70,7 @@ export function ExportMenu() {
       <button
         ref={button}
         popoverTarget="export-menu"
-        className="flex h-7 items-center gap-1.5 rounded-chip border border-line px-2.5 text-sm hover:bg-raised"
+        className="flex h-7 items-center gap-1.5 whitespace-nowrap rounded-chip border border-line px-2.5 text-sm hover:bg-raised"
       >
         <Download size={14} strokeWidth={1.5} aria-hidden />
         {tr.export.title}

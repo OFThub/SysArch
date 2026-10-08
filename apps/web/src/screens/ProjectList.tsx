@@ -5,6 +5,7 @@ import { tr } from '../i18n/tr';
 import { navigate } from '../nav';
 import { ThemeSwitch } from '../shell/ThemeSwitch';
 import { ConfirmDialog } from '../ui/ConfirmDialog';
+import { ago } from '../ui/time';
 import { ApiKeys } from './ApiKeys';
 
 type Row = { id: string; name: string; updatedAt: string };
@@ -14,15 +15,6 @@ const templates = TEMPLATES.map(({ id, build }) => {
   const doc = build();
   return { id, doc, domains: DOMAINS.filter((d) => doc.nodes.some((n) => n.domain === d)) };
 });
-
-const relative = new Intl.RelativeTimeFormat('tr', { numeric: 'auto' });
-function ago(iso: string) {
-  const minutes = Math.round((new Date(iso).getTime() - Date.now()) / 60_000);
-  if (Math.abs(minutes) < 60) return relative.format(minutes, 'minute');
-  const hours = Math.round(minutes / 60);
-  if (Math.abs(hours) < 24) return relative.format(hours, 'hour');
-  return relative.format(Math.round(hours / 24), 'day');
-}
 
 export function ProjectList({ userName }: { userName: string }) {
   const [rows, setRows] = useState<Row[] | 'failed' | null>(null);

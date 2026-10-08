@@ -39,7 +39,7 @@ const ApplyBody = z.object({
 
 export interface Proposal {
   id: string;
-  source: 'chat' | 'mcp' | 'import';
+  source: 'chat' | 'mcp' | 'import' | 'snapshot';
   summary: string;
   ops: Op[];
   newIssues: Issue[];

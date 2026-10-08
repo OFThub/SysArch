@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-10-08
+
+### Added
+
+- Snapshots under "Sürümler": save the design under a name, compare it
+  with the current one on the canvas, restore all or part of it as one
+  undo step, or open a copy as a new project.
+- Read-only share links under "Paylaş": anyone with the link sees the
+  design without an account; revoking the link stops it at once.
+- Terraform export: `terraform/main.tf` and `variables.tf` in the code zip
+  for components bound for AWS (ECS, RDS, ElastiCache, SQS, load
+  balancer, S3), valid against the AWS provider.
+
+### Changed
+
+- The editor header shows versions and sharing as icon buttons.
+
+### Security
+
+- A label, project name or pin name containing a line break could end a
+  comment in generated `pins.h` (since 0.1.0) or Terraform and add code to
+  it. User text in generated comments is now kept on one line.
+
 ## [0.5.0] - 2026-10-06
 
 ### Added
@@ -120,7 +143,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Continuous integration for formatting, types, lint, unit and end-to-end
   tests.
 
-[unreleased]: https://github.com/OFThub/SysArch/compare/v0.5.0...HEAD
+[unreleased]: https://github.com/OFThub/SysArch/compare/v0.6.0...HEAD
+[0.6.0]: https://github.com/OFThub/SysArch/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/OFThub/SysArch/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/OFThub/SysArch/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/OFThub/SysArch/compare/v0.2.0...v0.3.0
