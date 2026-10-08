@@ -240,7 +240,12 @@ export const tr = {
     tab: 'Öneriler',
     empty:
       'Bekleyen öneri yok. Asistanın ya da bir MCP istemcisinin önerdiği değişiklikler burada onayını bekler.',
-    source: { chat: 'Asistan', mcp: 'MCP istemcisi', import: 'İçe aktarma' },
+    source: {
+      chat: 'Asistan',
+      mcp: 'MCP istemcisi',
+      import: 'İçe aktarma',
+      snapshot: 'Anlık görüntü',
+    },
     changes: (n: number) => `${n} değişiklik`,
     back: 'Tüm öneriler',
     select: 'Uygulanacak değişiklikler',

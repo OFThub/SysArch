@@ -12,6 +12,7 @@ import { createEventBus } from './events';
 import { assistantRoutes } from './routes/assistant';
 import { MAX_BODY_BYTES, projectRoutes } from './routes/projects';
 import { proposalRoutes } from './routes/proposals';
+import { snapshotRoutes } from './routes/snapshots';
 
 export type AppEnv = { Variables: { user: SessionUser } };
 
@@ -63,7 +64,8 @@ export function createApp({ db, auth, env, model }: AppDeps) {
     )
     .route('/projects', projectRoutes(db, events))
     .route('/projects', proposalRoutes(db, events))
-    .route('/projects', assistantRoutes(db, events, model));
+    .route('/projects', assistantRoutes(db, events, model))
+    .route('/projects', snapshotRoutes(db, events));
 
   const app = new Hono();
   app.use('*', secureHeaders());
