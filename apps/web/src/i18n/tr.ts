@@ -69,6 +69,28 @@ export const tr = {
     fields: 'Alanlar',
     fieldsHint: 'Her satıra bir alan: ad: tür',
   },
+  snapshots: {
+    open: 'Sürümler',
+    name: 'Anlık görüntü adı',
+    placeholder: 'Örneğin: inceleme öncesi',
+    defaultName: (when: string) => `Anlık görüntü, ${when}`,
+    take: 'Anlık görüntü al',
+    taken: 'Anlık görüntü alındı.',
+    empty:
+      'Henüz anlık görüntü yok. Tasarımın şimdiki halini bir adla sakla; sonra karşılaştırıp geri dönebilirsin.',
+    compare: 'Karşılaştır',
+    same: 'Tasarım bu anlık görüntüyle aynı.',
+    tooMany: 'Fark tek bir öneride gösterilemeyecek kadar büyük. Kopyasını açıp incele.',
+    fork: 'Kopyasını aç',
+    forkName: (project: string, snapshot: string) => `${project} (${snapshot})`,
+    remove: 'Sil',
+    removeTitle: 'Anlık görüntü silinsin mi?',
+    removeBody: (name: string) => `${name} kalıcı olarak silinecek. Proje değişmez.`,
+    cancel: 'Vazgeç',
+    failed: 'İşlem tamamlanamadı. Tekrar dene.',
+    summary: (name: string) =>
+      `“${name}” anlık görüntüsüne dönüş. Uygularsan tasarım o hale döner; reddedersen değişmez.`,
+  },
   threats: {
     tab: 'Tehditler',
     boundaries: 'Güven sınırları',

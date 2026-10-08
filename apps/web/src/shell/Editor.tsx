@@ -7,6 +7,7 @@ import { Palette } from '../panels/Palette';
 import { Breadcrumb } from './Breadcrumb';
 import { ExportMenu } from './ExportMenu';
 import { ImportButton } from './ImportDialog';
+import { SnapshotsMenu } from './SnapshotsMenu';
 import { SidePanel } from './SidePanel';
 import { ThemeSwitch } from './ThemeSwitch';
 import { useShortcuts } from './useShortcuts';
@@ -65,6 +66,7 @@ export function Editor({ saveStatus, banner }: { saveStatus: ReactNode; banner?:
         <ViewTabs />
         <div className="ml-auto flex items-center gap-3">
           {saveStatus}
+          <SnapshotsMenu />
           <ImportButton />
           <ExportMenu />
           <div className="flex">
