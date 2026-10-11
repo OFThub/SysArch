@@ -1,6 +1,6 @@
 import { Share2 } from 'lucide-react';
 import { useRef, useState, type ToggleEvent } from 'react';
-import { createShare, getShare, revokeShare } from '../api/client';
+import { createShare, getShare, revokeShare, type ShareLink } from '../api/client';
 import { tr } from '../i18n/tr';
 import { useEditor } from '../store';
 
@@ -12,10 +12,12 @@ export function ShareMenu() {
   const projectId = useEditor((s) => s.project?.id);
   const button = useRef<HTMLButtonElement>(null);
   const menu = useRef<HTMLDivElement>(null);
-  const [token, setToken] = useState<string | null | undefined>(undefined);
+  // Undefined until the server answers.
+  const [link, setLink] = useState<ShareLink | undefined>(undefined);
   const [notice, setNotice] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const t = tr.share;
+  const token = link?.token;
   const url = token ? `${window.location.origin}/s/${token}` : '';
 
   const onToggle = (e: ToggleEvent<HTMLDivElement>) => {
@@ -25,7 +27,7 @@ export function ShareMenu() {
     menu.current.style.left = `${Math.max(8, r.right - menu.current.offsetWidth)}px`;
     setNotice(null);
     getShare(projectId)
-      .then(setToken)
+      .then(setLink)
       .catch(() => setNotice(t.failed));
   };
 
@@ -89,7 +91,7 @@ export function ShareMenu() {
                 onClick={() =>
                   void run(async () => {
                     if (!(await revokeShare(projectId!))) return t.failed;
-                    setToken(null);
+                    setLink({ token: null, comments: false });
                     return t.revoked;
                   })
                 }
@@ -100,10 +102,10 @@ export function ShareMenu() {
             </div>
           </div>
         ) : (
-          token === null && (
+          link?.token === null && (
             <button
               disabled={busy || !projectId}
-              onClick={() => void run(async () => setToken(await createShare(projectId!)))}
+              onClick={() => void run(async () => setLink(await createShare(projectId!)))}
               className="mt-3 h-7 rounded-chip bg-ink px-2.5 text-sm font-medium text-raised disabled:opacity-50"
             >
               {t.create}

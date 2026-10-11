@@ -1,6 +1,7 @@
 import { Handle, Position, useUpdateNodeInternals, type NodeProps } from '@xyflow/react';
-import { Layers } from 'lucide-react';
+import { Layers, MessageSquare } from 'lucide-react';
 import { useEffect } from 'react';
+import { useComments } from '../comments/store';
 import { tr } from '../i18n/tr';
 import { NodeIcon } from '../icons/NodeIcon';
 import { useCatalog } from '../store';
@@ -26,6 +27,7 @@ export function ArchNodeView({ id, data, selected }: NodeProps<ArchFlowNode>) {
   useEffect(() => updateNodeInternals(id), [id, padKey, updateNodeInternals]);
 
   const diff = data.diff && DIFF[data.diff];
+  const comments = useComments((s) => s.openByNode[node.id] ?? 0);
 
   return (
     <div
@@ -58,25 +60,38 @@ export function ArchNodeView({ id, data, selected }: NodeProps<ArchFlowNode>) {
             </div>
           )}
         </div>
-        {diff && data.diff && (
-          <span
-            className="ml-auto shrink-0 rounded-chip border px-1 text-xs"
-            style={{ color: diff.color, borderColor: diff.color }}
-          >
-            {tr.proposals.mark[data.diff]}
-          </span>
-        )}
-        {data.issue && (
-          <span
-            role="img"
-            aria-label={data.issue.text}
-            title={data.issue.text}
-            className={`${diff ? '' : 'ml-auto'} flex items-center gap-0.5 pt-0.5 text-xs tabular-nums`}
-          >
-            <SeverityIcon severity={data.issue.severity} />
-            {data.issue.count > 1 && data.issue.count}
-          </span>
-        )}
+        <div className="ml-auto flex shrink-0 items-start gap-1.5">
+          {diff && data.diff && (
+            <span
+              className="rounded-chip border px-1 text-xs"
+              style={{ color: diff.color, borderColor: diff.color }}
+            >
+              {tr.proposals.mark[data.diff]}
+            </span>
+          )}
+          {data.issue && (
+            <span
+              role="img"
+              aria-label={data.issue.text}
+              title={data.issue.text}
+              className="flex items-center gap-0.5 pt-0.5 text-xs tabular-nums"
+            >
+              <SeverityIcon severity={data.issue.severity} />
+              {data.issue.count > 1 && data.issue.count}
+            </span>
+          )}
+          {comments > 0 && (
+            <span
+              role="img"
+              aria-label={tr.comments.open(comments)}
+              title={tr.comments.open(comments)}
+              className="flex items-center gap-0.5 pt-0.5 text-xs text-ink-muted tabular-nums"
+            >
+              <MessageSquare size={12} strokeWidth={1.5} aria-hidden />
+              {comments}
+            </span>
+          )}
+        </div>
       </div>
       {hasPads && (
         <div className="flex justify-between gap-6 border-t border-line py-1.5">

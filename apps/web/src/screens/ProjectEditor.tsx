@@ -3,6 +3,7 @@ import { loadProject, saveProject } from '../api/client';
 import { tr } from '../i18n/tr';
 import { navigate } from '../nav';
 import { loadChat } from '../assistant/store';
+import { loadComments } from '../comments/store';
 import { loadProposals } from '../proposals/store';
 import { Editor } from '../shell/Editor';
 import { ConflictBanner, SaveStatus } from '../shell/SaveStatus';
@@ -28,12 +29,15 @@ export function ProjectEditor({ id }: { id: string }) {
         useEditor.getState().loadProject(project);
         void loadProposals(project.id);
         void loadChat(project.id);
+        void loadComments({ project: project.id });
         setPhase('ready');
       },
       () => current && setPhase('failed'),
     );
     return () => {
       current = false;
+      // Marks must not linger on whatever canvas shows next.
+      void loadComments(null);
     };
   }, [id, attempt]);
 
