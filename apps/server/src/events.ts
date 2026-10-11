@@ -5,7 +5,8 @@
  */
 export type ProjectEvent =
   | { type: 'doc.updated'; revision: number; origin?: string }
-  | { type: 'proposal.changed'; origin?: string };
+  | { type: 'proposal.changed'; origin?: string }
+  | { type: 'comments.changed'; origin?: string };
 
 type Listener = (event: ProjectEvent) => void;
 

@@ -36,6 +36,13 @@
       "when": 1791453468190,
       "tag": "0004_snapshots",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1791480052345,
+      "tag": "0005_comments",
+      "breakpoints": true
     }
   ]
 }

@@ -55,34 +55,35 @@ Work as a senior engineer fluent in full stack TypeScript, embedded systems
 
 ## Architecture map
 
-| Path                             | What lives there                                         |
-| -------------------------------- | -------------------------------------------------------- |
-| `packages/shared/src/schema.ts`  | `ArchDoc` zod schema and referential integrity           |
-| `packages/shared/src/migrate.ts` | Doc version upgrades, run on every read                  |
-| `packages/shared/src/edit.ts`    | Pure doc edits: connect, remove cascade, copy/paste      |
-| `packages/shared/src/flows.ts`   | Flow tracing (latency, broken step), links to a path     |
-| `packages/shared/src/pricing.ts` | Dated price table, overrides, `costReport`               |
-| `packages/shared/src/catalog/`   | Types, presets, protocols, pin maps, effective catalog   |
-| `packages/shared/src/validate/`  | Rule engine; one file per rule family in `rules/`        |
-| `packages/shared/src/simulate/`  | Load, capacity, power, latency; their rules              |
-| `packages/shared/src/export/`    | `ARCHITECTURE.md`/json, generators, Terraform, Wokwi/BOM |
-| `packages/shared/src/import/`    | compose, Mermaid, Wokwi → `Imported` → `importOps`       |
-| `packages/shared/src/templates/` | Starter docs (Sera IoT, edge AI, RAG, SaaS), fixtures    |
-| `apps/server/src/app.ts`         | Hono app; `ApiType` feeds the web RPC client             |
-| `apps/server/src/routes/`        | Project CRUD (revision CAS), proposals, snapshots, share |
-| `packages/shared/src/ops.ts`     | `Op` model, `applyOps`, `diffDocs`: every outside change |
-| `apps/server/src/ai/`            | Assistant loop: model edits a draft through ops          |
-| `apps/mcp/src/`                  | MCP server; reads via shared, writes only proposals      |
-| `apps/server/src/db/`            | Drizzle schema; migrations in `apps/server/drizzle`      |
-| `apps/server/src/test/`          | Test harness and session minting (tests, E2E)            |
-| `apps/web/src/store.ts`          | zustand editor store with zundo undo                     |
-| `apps/web/src/canvas/`           | React Flow view model, nodes, edges, elk layout          |
-| `apps/web/src/panels/`           | Palette and schema-driven inspector                      |
-| `apps/web/src/shell/`            | Editor frame, tabs, shortcuts, export menu               |
-| `apps/web/src/analysis/`         | Issues, simulation and flows panel; flow playback        |
-| `apps/web/src/code/`             | YAML code tab (Monaco): doc ↔ text with line errors      |
-| `apps/web/src/sync/`             | Debounced autosave and conflict handling                 |
-| `e2e/`                           | Playwright specs and session setup                       |
+| Path                             | What lives there                                               |
+| -------------------------------- | -------------------------------------------------------------- |
+| `packages/shared/src/schema.ts`  | `ArchDoc` zod schema and referential integrity                 |
+| `packages/shared/src/migrate.ts` | Doc version upgrades, run on every read                        |
+| `packages/shared/src/edit.ts`    | Pure doc edits: connect, remove cascade, copy/paste            |
+| `packages/shared/src/flows.ts`   | Flow tracing (latency, broken step), links to a path           |
+| `packages/shared/src/pricing.ts` | Dated price table, overrides, `costReport`                     |
+| `packages/shared/src/catalog/`   | Types, presets, protocols, pin maps, effective catalog         |
+| `packages/shared/src/validate/`  | Rule engine; one file per rule family in `rules/`              |
+| `packages/shared/src/simulate/`  | Load, capacity, power, latency; their rules                    |
+| `packages/shared/src/export/`    | `ARCHITECTURE.md`/json, generators, Terraform, Wokwi/BOM       |
+| `packages/shared/src/import/`    | compose, Mermaid, Wokwi → `Imported` → `importOps`             |
+| `packages/shared/src/templates/` | Starter docs (Sera IoT, edge AI, RAG, SaaS), fixtures          |
+| `apps/server/src/app.ts`         | Hono app; `ApiType` feeds the web RPC client                   |
+| `apps/server/src/routes/`        | Projects (revision CAS), proposals, snapshots, share, comments |
+| `packages/shared/src/ops.ts`     | `Op` model, `applyOps`, `diffDocs`: every outside change       |
+| `apps/server/src/ai/`            | Assistant loop: model edits a draft through ops                |
+| `apps/mcp/src/`                  | MCP server; reads via shared, writes only proposals            |
+| `apps/server/src/db/`            | Drizzle schema; migrations in `apps/server/drizzle`            |
+| `apps/server/src/test/`          | Test harness and session minting (tests, E2E)                  |
+| `apps/web/src/store.ts`          | zustand editor store with zundo undo                           |
+| `apps/web/src/canvas/`           | React Flow view model, nodes, edges, elk layout                |
+| `apps/web/src/panels/`           | Palette and schema-driven inspector                            |
+| `apps/web/src/shell/`            | Editor frame, tabs, shortcuts, export menu                     |
+| `apps/web/src/analysis/`         | Issues, simulation and flows panel; flow playback              |
+| `apps/web/src/code/`             | YAML code tab (Monaco): doc ↔ text with line errors            |
+| `apps/web/src/sync/`             | Debounced autosave and conflict handling                       |
+| `apps/web/src/comments/`         | Comment threads: store and panel (editor, share link)          |
+| `e2e/`                           | Playwright specs and session setup                             |
 
 Gotchas:
 

@@ -3,6 +3,7 @@ import { newId, type ArchDoc, type Op, type OpError } from '@sysarch/shared';
 import { apiKeyClient } from '@better-auth/api-key/client';
 import { createAuthClient } from 'better-auth/react';
 import { hc } from 'hono/client';
+import type { Comment, Target } from '../comments/threads';
 import type { SaveFn } from '../sync/autosave';
 
 /**
@@ -52,27 +53,90 @@ export async function createProposal(
 
 const share = api.projects[':id'].share;
 
-/** The project's read-only link token, or null when it is not shared. */
-export async function getShare(projectId: string): Promise<string | null> {
+/** The project's read-only link (token null when not shared) and whether it takes comments. */
+export type ShareLink = { token: string | null; comments: boolean };
+
+export async function getShare(projectId: string): Promise<ShareLink> {
   const res = await share.$get({ param: { id: projectId } });
   if (!res.ok) throw new Error(`http ${res.status}`);
-  return ((await res.json()) as { token: string | null }).token;
+  return (await res.json()) as ShareLink;
 }
 
-export async function createShare(projectId: string): Promise<string> {
+export async function createShare(projectId: string): Promise<ShareLink> {
   const res = await share.$post({ param: { id: projectId } });
   if (!res.ok) throw new Error(`http ${res.status}`);
-  return ((await res.json()) as { token: string }).token;
+  return (await res.json()) as ShareLink;
+}
+
+export async function setShareComments(projectId: string, comments: boolean): Promise<ShareLink> {
+  const res = await share.$patch({ param: { id: projectId }, json: { comments } });
+  if (!res.ok) throw new Error(`http ${res.status}`);
+  return (await res.json()) as ShareLink;
 }
 
 export async function revokeShare(projectId: string): Promise<boolean> {
   return (await share.$delete({ param: { id: projectId } })).ok;
 }
 
+export type Shared = { name: string; doc: ArchDoc; comments: boolean };
+
 /** A shared design, read without a session; null when the link is unknown or revoked. */
-export async function readShared(token: string): Promise<{ name: string; doc: ArchDoc } | null> {
+export async function readShared(token: string): Promise<Shared | null> {
   const res = await api.share[':token'].$get({ param: { token } });
-  return res.ok ? ((await res.json()) as { name: string; doc: ArchDoc }) : null;
+  return res.ok ? ((await res.json()) as Shared) : null;
+}
+
+/**
+ * Where comments are read and written: the owner's project, or a share link
+ * (read by anyone, written with a session).
+ */
+export type CommentSource = { project: string } | { token: string };
+export type NewComment = { body: string } & ({ target: Target } | { parentId: string });
+/** Why a write failed, for the message the user sees. */
+export type CommentError = 'rate_limited' | 'failed';
+
+const projectComments = api.projects[':id'].comments;
+const linkComments = api.share[':token'].comments;
+
+export async function listComments(source: CommentSource): Promise<Comment[]> {
+  const res =
+    'project' in source
+      ? await projectComments.$get({ param: { id: source.project } })
+      : await linkComments.$get({ param: { token: source.token } });
+  if (!res.ok) throw new Error(`http ${res.status}`);
+  return (await res.json()).comments as unknown as Comment[];
+}
+
+export async function addComment(
+  source: CommentSource,
+  json: NewComment,
+): Promise<CommentError | null> {
+  const res =
+    'project' in source
+      ? await projectComments.$post({ param: { id: source.project }, json })
+      : await linkComments.$post({ param: { token: source.token }, json });
+  return res.ok ? null : res.status === 429 ? 'rate_limited' : 'failed';
+}
+
+export async function removeComment(source: CommentSource, id: string): Promise<boolean> {
+  const res =
+    'project' in source
+      ? await projectComments[':cid'].$delete({ param: { id: source.project, cid: id } })
+      : await linkComments[':cid'].$delete({ param: { token: source.token, cid: id } });
+  return res.ok;
+}
+
+/** Owner only: resolving is per thread, by its root comment. */
+export async function resolveThread(
+  projectId: string,
+  id: string,
+  resolved: boolean,
+): Promise<boolean> {
+  const res = await projectComments[':cid'].$patch({
+    param: { id: projectId, cid: id },
+    json: { resolved },
+  });
+  return res.ok;
 }
 
 export type Snapshot = { id: string; name: string; revision: number; createdAt: string };

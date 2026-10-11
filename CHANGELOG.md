@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-10-11
+
+### Added
+
+- Comments in the "Yorumlar" tab: threads about the whole design, a
+  component or a link, with replies. Resolve a thread when it is
+  settled; a new reply opens it again. Components with open threads
+  carry a mark on the canvas, and a thread's subject opens there in one
+  click.
+- Comments through share links, off by default: once allowed under
+  "Paylaş", anyone with the link reads them and signed-in visitors
+  write and remove their own. Commenters show by name, never by email.
+  Revoking the link also turns its comments off.
+
+### Changed
+
+- The side panel is slightly wider so its five tabs fit.
+
 ## [0.6.1] - 2026-10-08
 
 ### Added
@@ -157,7 +175,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Continuous integration for formatting, types, lint, unit and end-to-end
   tests.
 
-[unreleased]: https://github.com/OFThub/SysArch/compare/v0.6.1...HEAD
+[unreleased]: https://github.com/OFThub/SysArch/compare/v0.7.0...HEAD
+[0.7.0]: https://github.com/OFThub/SysArch/compare/v0.6.1...v0.7.0
 [0.6.1]: https://github.com/OFThub/SysArch/compare/v0.6.0...v0.6.1
 [0.6.0]: https://github.com/OFThub/SysArch/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/OFThub/SysArch/compare/v0.4.0...v0.5.0

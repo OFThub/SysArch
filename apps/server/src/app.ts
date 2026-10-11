@@ -10,12 +10,16 @@ import { enabledProviders, type Env } from './env';
 import type { ModelTurn } from './ai/assistant';
 import { createEventBus } from './events';
 import { assistantRoutes } from './routes/assistant';
+import { commentRoutes, sharedCommentRoutes } from './routes/comments';
 import { MAX_BODY_BYTES, projectRoutes } from './routes/projects';
 import { proposalRoutes } from './routes/proposals';
 import { shareAdminRoutes, sharePublicRoutes } from './routes/share';
 import { snapshotRoutes } from './routes/snapshots';
 
 export type AppEnv = { Variables: { user: SessionUser } };
+
+/** Requests under /share carry at most a comment. */
+const SHARE_BODY_BYTES = 16 * 1024;
 
 export interface AppDeps {
   db: Db;
@@ -29,18 +33,22 @@ export function createApp({ db, auth, env, model }: AppDeps) {
   // Live updates for open editors (SSE); the assistant publishes here too.
   const events = createEventBus();
 
-  /** Rejects the request unless it carries a valid session; exposes the user to handlers. */
-  const requireUser = createMiddleware<AppEnv>(async (c, next) => {
+  /** The signed-in user behind a request, or null. */
+  const sessionUser = async (headers: Headers) => {
     // A bad API key makes getSession throw rather than return null; that is
     // still just "not signed in". Anything else is a real fault and propagates.
-    const session = await auth.api
-      .getSession({ headers: c.req.raw.headers })
-      .catch((e: unknown) => {
-        if (e instanceof APIError) return null;
-        throw e;
-      });
-    if (!session) return c.json({ error: 'unauthorized' }, 401);
-    c.set('user', session.user);
+    const session = await auth.api.getSession({ headers }).catch((e: unknown) => {
+      if (e instanceof APIError) return null;
+      throw e;
+    });
+    return session?.user ?? null;
+  };
+
+  /** Rejects the request unless it carries a valid session; exposes the user to handlers. */
+  const requireUser = createMiddleware<AppEnv>(async (c, next) => {
+    const user = await sessionUser(c.req.raw.headers);
+    if (!user) return c.json({ error: 'unauthorized' }, 401);
+    c.set('user', user);
     await next();
   });
 
@@ -50,7 +58,16 @@ export function createApp({ db, auth, env, model }: AppDeps) {
     .get('/health', (c) => c.json({ ok: true }))
     .get('/providers', (c) => c.json({ providers: enabledProviders(env) }))
     // Read-only links: public on purpose, the unguessable token is the key.
+    // Bodies here are comments only, so the limit is small.
+    .use(
+      '/share/*',
+      bodyLimit({
+        maxSize: SHARE_BODY_BYTES,
+        onError: (c) => c.json({ error: 'payload_too_large' }, 413),
+      }),
+    )
     .route('/share', sharePublicRoutes(db))
+    .route('/share', sharedCommentRoutes(db, events, { requireUser, sessionUser }))
     .get('/me', requireUser, (c) => {
       const u = c.get('user');
       return c.json({ id: u.id, name: u.name, email: u.email, image: u.image ?? null });
@@ -69,7 +86,8 @@ export function createApp({ db, auth, env, model }: AppDeps) {
     .route('/projects', proposalRoutes(db, events))
     .route('/projects', assistantRoutes(db, events, model))
     .route('/projects', snapshotRoutes(db, events))
-    .route('/projects', shareAdminRoutes(db));
+    .route('/projects', shareAdminRoutes(db))
+    .route('/projects', commentRoutes(db, events));
 
   const app = new Hono();
   app.use('*', secureHeaders());

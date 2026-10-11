@@ -1,5 +1,6 @@
 import type { ProjectEvent } from '@sysarch/server/api';
 import { CLIENT_ID, loadProject, type ProjectData } from '../api/client';
+import { refreshComments } from '../comments/store';
 import { refreshProposals } from '../proposals/store';
 import { useEditor } from '../store';
 import { useSaveStatus } from './autosave';
@@ -46,6 +47,10 @@ export function watchProject(projectId: string) {
   });
   source.addEventListener('proposal.changed', (m) => {
     if (parse(m).origin !== CLIENT_ID) void refreshProposals(projectId);
+  });
+  // Comments from share-link visitors, or from this owner's other tabs.
+  source.addEventListener('comments.changed', (m) => {
+    if (parse(m).origin !== CLIENT_ID) void refreshComments();
   });
   return () => source.close();
 }

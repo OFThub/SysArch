@@ -1,5 +1,5 @@
 import { sql } from 'drizzle-orm';
-import { index, integer, sqliteTable, text } from 'drizzle-orm/sqlite-core';
+import { type AnySQLiteColumn, index, integer, sqliteTable, text } from 'drizzle-orm/sqlite-core';
 import { user } from './auth-schema';
 
 export * from './auth-schema';
@@ -21,6 +21,8 @@ export const projects = sqliteTable(
     // and a stale one is rejected with 409 instead of overwriting.
     revision: integer('revision').notNull().default(1),
     shareToken: text('share_token').unique(),
+    // Whether the share link shows comments and takes new ones from signed-in visitors.
+    shareComments: integer('share_comments', { mode: 'boolean' }).notNull().default(false),
     createdAt: integer('created_at', { mode: 'timestamp_ms' }).default(now).notNull(),
     updatedAt: integer('updated_at', { mode: 'timestamp_ms' })
       .default(now)
@@ -75,6 +77,36 @@ export const snapshots = sqliteTable(
     createdAt: integer('created_at', { mode: 'timestamp_ms' }).default(now).notNull(),
   },
   (t) => [index('snapshots_project_idx').on(t.projectId)],
+);
+
+/**
+ * Discussion about a design, kept beside it rather than in the doc: comments
+ * never change the architecture, its revision, snapshots or exports. A
+ * thread is a root comment and its replies (one level); replies copy the
+ * root's target. A target the doc no longer has keeps its thread.
+ */
+export const comments = sqliteTable(
+  'comments',
+  {
+    id: text('id').primaryKey(),
+    projectId: text('project_id')
+      .notNull()
+      .references(() => projects.id, { onDelete: 'cascade' }),
+    authorId: text('author_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    parentId: text('parent_id').references((): AnySQLiteColumn => comments.id, {
+      onDelete: 'cascade',
+    }),
+    targetKind: text('target_kind', { enum: ['project', 'node', 'edge'] }).notNull(),
+    // A node or edge id of the doc; null for the project as a whole.
+    targetId: text('target_id'),
+    body: text('body').notNull(),
+    // Set on a thread's root when it is resolved.
+    resolvedAt: integer('resolved_at', { mode: 'timestamp_ms' }),
+    createdAt: integer('created_at', { mode: 'timestamp_ms' }).default(now).notNull(),
+  },
+  (t) => [index('comments_project_idx').on(t.projectId, t.createdAt)],
 );
 
 /** The assistant chat of a project, as plain text turns. */
