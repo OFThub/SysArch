@@ -45,3 +45,28 @@ test('import a compose file as a proposal, review it, apply it', async ({ page }
   await expect(node(page, 'ledger')).not.toContainText('Yeni');
   await expect(node(page, 'jobs')).toBeVisible();
 });
+
+test('import a Terraform state file; its secrets stay in the browser', async ({ page }) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Boş proje oluştur' }).click();
+  await expect(page).toHaveURL(/\/p\/[\w-]+$/);
+
+  // Watch everything the tab sends: the state's password must not be in it.
+  const sent: string[] = [];
+  page.on('request', (r) => sent.push(r.postData() ?? ''));
+
+  await page.getByRole('button', { name: 'İçe aktar' }).click();
+  const dialog = page.getByRole('dialog');
+  await dialog
+    .getByLabel('Dosya seç')
+    .setInputFiles('packages/shared/src/import/fixtures/terraform-docker-state.json');
+  await expect(dialog.getByRole('status')).toContainText('Terraform JSON: 3 bileşen, 2 bağlantı');
+  await dialog.getByRole('button', { name: 'Öneri olarak ekle' }).click();
+  await expect(dialog).toHaveCount(0);
+
+  await page.getByRole('button', { name: 'Öneriyi uygula' }).click();
+  await expect(page.getByText('Öneri uygulandı.')).toBeVisible();
+  for (const name of ['db', 'edge', 'sessions']) await expect(node(page, name)).toBeVisible();
+  expect(sent.join('\n')).toContain('Terraform JSON içe aktarıldı');
+  expect(sent.join('\n')).not.toContain('CANARY');
+});

@@ -9,8 +9,8 @@ import { flushAutosave } from '../sync/autosave';
 import { SeverityIcon } from '../ui/SeverityIcon';
 import { showSideTab } from './SidePanel';
 
-/** Big enough for any compose file or diagram; keeps a stray upload from freezing the tab. */
-const MAX_BYTES = 1_000_000;
+/** Room for a sizeable Terraform state; keeps a stray upload from freezing the tab. */
+const MAX_BYTES = 5_000_000;
 const SHOWN_NOTES = 5;
 
 export function ImportButton() {
@@ -30,10 +30,12 @@ export function ImportButton() {
 }
 
 /**
- * Brings a docker-compose file, Mermaid flowchart or Wokwi diagram in as a
- * proposal: the format is read from the content, what it found is shown
- * before anything is sent, and the result opens in the proposals tab for
- * review. The design itself only changes when the proposal is applied.
+ * Brings a docker-compose file, Mermaid flowchart, Wokwi diagram or
+ * Terraform JSON in as a proposal: the format is read from the content,
+ * here in the browser, and what it found is shown before anything is sent.
+ * Only the resulting ops leave the tab, never the source (a Terraform state
+ * holds secrets). The result opens in the proposals tab for review; the
+ * design itself only changes when the proposal is applied.
  */
 function ImportDialog({ onClose }: { onClose: () => void }) {
   const ref = useRef<HTMLDialogElement>(null);
@@ -94,6 +96,7 @@ function ImportDialog({ onClose }: { onClose: () => void }) {
         {tr.import.open}
       </h2>
       <p className="mt-2 text-sm text-ink-muted">{tr.import.body}</p>
+      <p className="mt-1 text-sm text-ink-muted">{tr.import.private}</p>
       <div className="mt-4 flex items-center gap-3">
         <label className="flex h-8 cursor-pointer items-center rounded-chip border border-line px-3 text-sm hover:bg-panel has-[:focus-visible]:outline-2">
           {tr.import.file}
