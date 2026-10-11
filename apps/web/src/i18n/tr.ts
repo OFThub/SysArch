@@ -239,11 +239,18 @@ export const tr = {
   },
   import: {
     open: 'İçe aktar',
-    body: 'docker-compose, Mermaid flowchart ya da Wokwi diagram.json. Eklenenler öneri olarak gelir; sen onaylamadan tasarım değişmez.',
+    body: 'docker-compose, Mermaid flowchart, Wokwi diagram.json ya da terraform show -json çıktısı. Eklenenler öneri olarak gelir; sen onaylamadan tasarım değişmez.',
+    private:
+      'Dosya tarayıcında okunur. Sunucuya yalnızca bulunan bileşenler ve bağlantılar gider; Terraform durumundaki değerler ve gizli bilgiler gitmez.',
     file: 'Dosya seç',
     text: 'İçe aktarılacak metin',
     placeholder: 'Dosya seç ya da metni buraya yapıştır.',
-    format: { compose: 'docker-compose', mermaid: 'Mermaid flowchart', wokwi: 'Wokwi diyagramı' },
+    format: {
+      compose: 'docker-compose',
+      mermaid: 'Mermaid flowchart',
+      wokwi: 'Wokwi diyagramı',
+      terraform: 'Terraform JSON',
+    },
     found: (format: string, nodes: number, edges: number) =>
       `${format}: ${nodes} bileşen, ${edges} bağlantı`,
     guessed: (subject: string) => `${subject}: türü adından tahmin edildi`,
@@ -253,9 +260,9 @@ export const tr = {
       syntax: 'Metin okunamadı: sözdizimi hatalı.',
       empty: 'İçe aktarılacak bir bileşen bulunamadı.',
       format:
-        'Bu biçim tanınmadı. docker-compose, Mermaid flowchart ya da Wokwi diagram.json kullan.',
+        'Bu biçim tanınmadı. docker-compose, Mermaid flowchart, Wokwi diagram.json ya da terraform show -json çıktısı kullan.',
     },
-    tooBig: "Dosya 1 MB'tan büyük. Daha küçük bir parçasını yapıştır.",
+    tooBig: "Dosya 5 MB'tan büyük. Daha küçük bir parçasını yapıştır.",
     submit: 'Öneri olarak ekle',
     failed: 'Öneri eklenemedi. Tekrar dene.',
     cancel: 'Vazgeç',

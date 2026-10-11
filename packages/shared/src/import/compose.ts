@@ -26,6 +26,14 @@ const IMAGES: [RegExp, string, Props?][] = [
 /** A service built from source is the team's own code; its name says which side. */
 const FRONTEND_NAME = /web|front|ui|client|site/i;
 
+/** The catalog type (and props) a container image stands for, if it is a known one. */
+export function imageType(image: string): [string, Props] | undefined {
+  const known = IMAGES.find(([re]) => re.test(image.toLowerCase()));
+  return known && [known[1], known[2] ?? {}];
+}
+/** The team's own code, built from source: a frontend or an API, by name. */
+export const ownCodeType = (name: string) => (FRONTEND_NAME.test(name) ? 'frontend' : 'api');
+
 /** The container side of the first published port: "8080:3000" → 3000. */
 function containerPort(ports: unknown): number | undefined {
   const first: unknown = Array.isArray(ports) ? ports[0] : undefined;
@@ -63,12 +71,11 @@ export function fromCompose(text: string, catalog: Catalog): Imported {
   const nodes = new Map<string, ArchNode>();
   for (const [name, raw] of entries) {
     const s = (raw ?? {}) as { image?: unknown; build?: unknown; ports?: unknown };
-    const image = typeof s.image === 'string' ? s.image.toLowerCase() : '';
-    const known = IMAGES.find(([re]) => image && re.test(image));
+    const known = typeof s.image === 'string' ? imageType(s.image) : undefined;
     let type: string;
     let props: Props = {};
-    if (known) [, type, props = {}] = known;
-    else if (s.build !== undefined) type = FRONTEND_NAME.test(name) ? 'frontend' : 'api';
+    if (known) [type, props] = known;
+    else if (s.build !== undefined) type = ownCodeType(name);
     else {
       type = 'api';
       notes.push({ code: 'guessed', subject: name });
