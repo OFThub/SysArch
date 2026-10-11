@@ -1,6 +1,12 @@
 import { Share2 } from 'lucide-react';
 import { useRef, useState, type ToggleEvent } from 'react';
-import { createShare, getShare, revokeShare, type ShareLink } from '../api/client';
+import {
+  createShare,
+  getShare,
+  revokeShare,
+  setShareComments,
+  type ShareLink,
+} from '../api/client';
 import { tr } from '../i18n/tr';
 import { useEditor } from '../store';
 
@@ -73,6 +79,32 @@ export function ShareMenu() {
               onFocus={(e) => e.target.select()}
               className="h-7 w-full rounded-chip border border-line bg-panel px-2 font-mono text-xs"
             />
+            <label className="mt-1 flex items-start gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={link?.comments ?? false}
+                disabled={busy}
+                onChange={(e) => {
+                  const on = e.target.checked;
+                  // Flips at once; flips back if the server refuses.
+                  const flip = (to: boolean) => setLink((l) => l && { ...l, comments: to });
+                  flip(on);
+                  void run(async () => {
+                    try {
+                      setLink(await setShareComments(projectId!, on));
+                    } catch (error) {
+                      flip(!on);
+                      throw error;
+                    }
+                  });
+                }}
+                className="mt-0.5 size-3.5 shrink-0 accent-[var(--ink)]"
+              />
+              <span>
+                {t.allowComments}
+                <span className="block text-xs text-ink-muted">{t.allowCommentsHint}</span>
+              </span>
+            </label>
             <div className="flex gap-2">
               <button
                 disabled={busy}
