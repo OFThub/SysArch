@@ -1,5 +1,6 @@
 export * from './common';
 export { fromCompose } from './compose';
 export { fromMermaid } from './mermaid';
+export { fromTerraform } from './terraform';
 export { fromWokwi } from './wokwi';
 export { readSource, type SourceFormat } from './read';

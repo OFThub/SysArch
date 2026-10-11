@@ -243,7 +243,12 @@ export const tr = {
     file: 'Dosya seç',
     text: 'İçe aktarılacak metin',
     placeholder: 'Dosya seç ya da metni buraya yapıştır.',
-    format: { compose: 'docker-compose', mermaid: 'Mermaid flowchart', wokwi: 'Wokwi diyagramı' },
+    format: {
+      compose: 'docker-compose',
+      mermaid: 'Mermaid flowchart',
+      wokwi: 'Wokwi diyagramı',
+      terraform: 'Terraform JSON',
+    },
     found: (format: string, nodes: number, edges: number) =>
       `${format}: ${nodes} bileşen, ${edges} bağlantı`,
     guessed: (subject: string) => `${subject}: türü adından tahmin edildi`,
