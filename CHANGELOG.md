@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Comments in the "Yorumlar" tab: threads about the whole design, a
+  component or a link, with replies. Resolve a thread when it is
+  settled; a new reply opens it again. Components with open threads
+  carry a mark on the canvas, and a thread's subject opens there in one
+  click.
+- Comments through share links, off by default: once allowed under
+  "Paylaş", anyone with the link reads them and signed-in visitors
+  write and remove their own. Commenters show by name, never by email.
+  Revoking the link also turns its comments off.
+
+### Changed
+
+- The side panel is slightly wider so its five tabs fit.
+
 ## [0.6.1] - 2026-10-08
 
 ### Added

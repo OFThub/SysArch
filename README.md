@@ -54,6 +54,10 @@ overview tab where cross-domain links are drawn.
 - **Versions and sharing.** Named snapshots to compare against, restore
   (in full or in part) or fork into a new project; a read-only link that
   opens without an account and can be revoked.
+- **Comments.** Threads about the whole design, a component or a link,
+  with replies; resolve them when settled. The owner can open them to
+  a share link: anyone with the link reads, signed-in visitors write.
+  Commenters show by name, never by email.
 - **Import.** A docker-compose file, a Mermaid flowchart (bare or in a
   README) or a Wokwi `diagram.json` comes in as a proposal: previewed on
   the canvas, applied in full or in part.
