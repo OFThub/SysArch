@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Terraform import under "İçe aktar": `terraform show -json` output, of
+  a state or a plan, becomes a proposal. AWS resources that are
+  components (ECS, Lambda, EC2, RDS, ElastiCache, SQS, MSK, MQ, load
+  balancers, API Gateway, CloudFront, Cognito, S3, SageMaker) and Docker
+  containers come in typed; links follow what each resource depends on,
+  including services behind a load balancer and Lambdas fed by a queue.
+  Other resources are listed as left out.
+
+### Changed
+
+- Import files may be up to 5 MB (was 1 MB).
+
+### Security
+
+- An imported file is read in the browser and only the components and
+  links found are sent. Terraform state holds secrets in the clear; none
+  of its values are carried into the design.
+
 ## [0.7.0] - 2026-10-11
 
 ### Added

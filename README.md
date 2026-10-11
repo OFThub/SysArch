@@ -59,8 +59,11 @@ overview tab where cross-domain links are drawn.
   a share link: anyone with the link reads, signed-in visitors write.
   Commenters show by name, never by email.
 - **Import.** A docker-compose file, a Mermaid flowchart (bare or in a
-  README) or a Wokwi `diagram.json` comes in as a proposal: previewed on
-  the canvas, applied in full or in part.
+  README), a Wokwi `diagram.json` or `terraform show -json` output (a
+  state or a plan, AWS and Docker resources) comes in as a proposal:
+  previewed on the canvas, applied in full or in part. Files are read in
+  the browser; a Terraform state's values and secrets never reach the
+  server.
 - **Templates.** Start from Sera IoT, an edge AI camera, a RAG app or a
   SaaS app, each with its flows and targets.
 - **Editor.** Undo/redo, multi-select, copy/paste across tabs, automatic

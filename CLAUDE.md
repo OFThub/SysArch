@@ -66,7 +66,7 @@ Work as a senior engineer fluent in full stack TypeScript, embedded systems
 | `packages/shared/src/validate/`  | Rule engine; one file per rule family in `rules/`              |
 | `packages/shared/src/simulate/`  | Load, capacity, power, latency; their rules                    |
 | `packages/shared/src/export/`    | `ARCHITECTURE.md`/json, generators, Terraform, Wokwi/BOM       |
-| `packages/shared/src/import/`    | compose, Mermaid, Wokwi → `Imported` → `importOps`             |
+| `packages/shared/src/import/`    | compose, Mermaid, Wokwi, Terraform JSON → `importOps`          |
 | `packages/shared/src/templates/` | Starter docs (Sera IoT, edge AI, RAG, SaaS), fixtures          |
 | `apps/server/src/app.ts`         | Hono app; `ApiType` feeds the web RPC client                   |
 | `apps/server/src/routes/`        | Projects (revision CAS), proposals, snapshots, share, comments |
